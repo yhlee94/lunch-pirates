@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const socketIo = require('socket.io');
+const pool = require('./config/database');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -33,4 +35,21 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`서버 실행 중: http://localhost:${PORT}`);
+});
+
+// DB 연결 테스트 API
+app.get('/api/test-db', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT NOW()');
+        res.json({
+            success: true,
+            message: 'DB 연결 성공!',
+            time: result.rows[0].now
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
