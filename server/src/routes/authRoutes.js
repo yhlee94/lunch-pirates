@@ -6,6 +6,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 // 회원가입
 router.post('/register', authController.register);
 
+// 메일 인증
+router.get('/verify-email', authController.verifyEmail);
+
 // 로그인
 router.post('/login', authController.login);
 

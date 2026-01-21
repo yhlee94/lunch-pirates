@@ -5,6 +5,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const pool = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const companyRoutes = require('./routes/companyRoutes');
 
 
 const app = express();
@@ -20,6 +21,7 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRoutes);
+app.use('/api/company', companyRoutes);
 
 // Test route
 app.get('/', (req, res) => {
