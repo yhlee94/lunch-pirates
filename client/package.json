@@ -4,7 +4,6 @@
   "private": true,
   "main": "public/electron.js",
   "homepage": "./",
-  "proxy": "http://localhost:5000",
   "author": "YongHyun",
   "description": "점심 해적단 - 함께 점심 먹으러 출항!",
   "dependencies": {
@@ -53,6 +52,7 @@
     "cross-env": "^10.1.0",
     "electron": "^40.0.0",
     "electron-builder": "^24.13.3",
+    "http-proxy-middleware": "^3.0.5",
     "wait-on": "^7.2.0"
   },
   "build": {

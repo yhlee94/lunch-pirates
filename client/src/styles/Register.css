@@ -166,3 +166,35 @@
     color: #666;
     margin-top: -5px;
 }
+
+/* 지도 섹션 추가 */
+.company-map-section {
+    margin-top: -5px;
+    margin-bottom: 15px;
+}
+
+.company-map {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 2px solid #eee;
+}
+
+.company-address {
+    padding: 12px;
+    background-color: #f0f4ff;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+}
+
+/* Register.css */
+.error-message {
+    white-space: pre-line;
+}
+
+.success-message {
+    white-space: pre-line;
+}

@@ -1,5 +1,5 @@
 // client/src/components/Register.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CompanySearchModal from './CompanySearchModal';
 import '../styles/Register.css';
 
@@ -12,21 +12,14 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
         email: '',
         password: '',
         passwordConfirm: '',
-        nickname: ''
+        name: ''
     });
     const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    // 회사 선택 핸들러 (추가!)
+    // 회사 선택 핸들러
     const handleSelectCompany = (company) => {
         setFormData({
             ...formData,
@@ -36,6 +29,44 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
             companyLongitude: company.x
         });
     };
+
+    // 카카오 지도 표시
+    useEffect(() => {
+        if (formData.companyLatitude && formData.companyLongitude) {
+            const container = document.getElementById('company-map');
+
+            if (container && window.kakao && window.kakao.maps) {
+                const options = {
+                    center: new window.kakao.maps.LatLng(
+                        formData.companyLatitude,
+                        formData.companyLongitude
+                    ),
+                    level: 3
+                };
+
+                const map = new window.kakao.maps.Map(container, options);
+
+                // 마커 표시
+                const markerPosition = new window.kakao.maps.LatLng(
+                    formData.companyLatitude,
+                    formData.companyLongitude
+                );
+                const marker = new window.kakao.maps.Marker({
+                    position: markerPosition
+                });
+                marker.setMap(map);
+            }
+        }
+    }, [formData.companyLatitude, formData.companyLongitude]);
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -57,8 +88,17 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
             return;
         }
 
-        if (formData.password.length < 4) {
-            setError('비밀번호는 4자 이상이어야 합니다.');
+        // 비밀번호 자리 검증
+        if (formData.password.length < 6) {
+            setError('비밀번호는 6자 이상이어야 합니다.');
+            setLoading(false);
+            return;
+        }
+
+        // 특수문자 포함 여부 확인
+        const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+        if (!specialCharPattern.test(formData.password)) {
+            setError('비밀번호에 특수문자를 포함해주세요.');
             setLoading(false);
             return;
         }
@@ -71,19 +111,26 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                 },
                 body: JSON.stringify({
                     companyName: formData.companyName,
+                    companyAddress: formData.companyAddress,
+                    companyLatitude: formData.companyLatitude,
+                    companyLongitude: formData.companyLongitude,
                     email: formData.email,
                     password: formData.password,
-                    nickname: formData.nickname
+                    name: formData.name
                 }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setSuccessMessage('회원가입 성공! 이메일을 확인해주세요 📧');
-                setTimeout(() => {
-                    onBackToLogin();
-                }, 3000);
+                if (response.ok) {
+                    setSuccessMessage(
+                        `회원가입 성공! 🎉\n\n` +
+                        `인증 메일이 발송되었습니다.\n` +
+                        `📧 ${formData.email}\n\n` +
+                        `메일함을 확인해주세요.`
+                    );
+                }
             } else {
                 setError(data.message || '회원가입에 실패했습니다.');
             }
@@ -140,9 +187,13 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                             </button>
                         </div>
 
-                        {formData.companyAddress && (
-                            <div className="company-info">
-                                📍 {formData.companyAddress}
+                        {/* 카카오 지도 추가! */}
+                        {formData.companyLatitude && formData.companyLongitude && (
+                            <div className="company-map-section">
+                                <div id="company-map" className="company-map"></div>
+                                <div className="company-address">
+                                    📍 {formData.companyAddress}
+                                </div>
                             </div>
                         )}
 
@@ -158,9 +209,9 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
                         <input
                             type="text"
-                            name="nickname"
-                            placeholder="닉네임 (예: 해적왕)"
-                            value={formData.nickname}
+                            name="name"
+                            placeholder="실명 (예: 홍길동)"
+                            value={formData.name}
                             onChange={handleChange}
                             className="input-field"
                             maxLength="50"
@@ -170,7 +221,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                         <input
                             type="password"
                             name="password"
-                            placeholder="비밀번호 (4자 이상)"
+                            placeholder="비밀번호 (특수문자 포함 6자 이상)"
                             value={formData.password}
                             onChange={handleChange}
                             className="input-field"

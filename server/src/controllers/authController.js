@@ -7,11 +7,11 @@ const { searchKakaoLocal } = require('../utils/kakao');
 
 // 회원가입
 const register = async (req, res) => {
-    const { companyName, email, password, nickname } = req.body;
+    const { companyName, companyAddress, companyLatitude, companyLongitude, email, password, name } = req.body;
 
     try {
         // 1. 입력 검증
-        if (!companyName || !email || !password || !nickname) {
+        if (!companyName || !email || !password || !name) {
             return res.status(400).json({
                 success: false,
                 message: '모든 필드를 입력해주세요'
@@ -40,45 +40,47 @@ const register = async (req, res) => {
             });
         }
 
-        // 4. companies 테이블에서 회사 검색
+        // 4. 회사명 + 주소로 기존 회사 검색
         let company = await pool.query(
-            'SELECT * FROM companies WHERE email_domain = $1 AND deleted_yn = $2',
-            [emailDomain, 'N']
+            'SELECT * FROM companies WHERE name = $1 AND address = $2 AND deleted_yn = $3',
+            [companyName, companyAddress, 'N']
         );
 
         let companyId;
 
-        // 5. 회사가 없으면 카카오 API로 검색 후 생성
-        if (company.rows.length === 0) {
-            console.log('🔍 카카오 API로 회사 검색:', companyName);
+        if (company.rows.length > 0) {
+            // 기존 회사 발견!
+            const existingCompany = company.rows[0];
 
-            const kakaoResult = await searchKakaoLocal(companyName);
-
-            if (!kakaoResult) {
+            // 이메일 도메인 검증
+            if (existingCompany.email_domain !== emailDomain) {
                 return res.status(400).json({
                     success: false,
-                    message: '회사를 찾을 수 없습니다. 회사명을 확인해주세요'
+                    message: `${existingCompany.name}은(는) @${existingCompany.email_domain} 이메일만 사용 가능합니다.\n 입력하신 이메일: ${email}`
                 });
             }
 
-            // companies INSERT
+            companyId = existingCompany.id;
+            console.log('기존 회사 사용:', existingCompany.name, existingCompany.address);
+
+        } else {
+            // 새 회사 생성
+            console.log('새 회사 생성:', companyName, companyAddress);
+
             const newCompany = await pool.query(
                 `INSERT INTO companies (name, address, latitude, longitude, email_domain, approved_yn)
-         VALUES ($1, $2, $3, $4, $5, 'N') RETURNING *`,
+                 VALUES ($1, $2, $3, $4, $5, 'N') RETURNING *`,
                 [
-                    kakaoResult.place_name,
-                    kakaoResult.address_name || kakaoResult.road_address_name,
-                    kakaoResult.y, // 위도
-                    kakaoResult.x, // 경도
+                    companyName,
+                    companyAddress,
+                    companyLatitude,
+                    companyLongitude,
                     emailDomain
                 ]
             );
 
             companyId = newCompany.rows[0].id;
-            console.log('새 회사 생성 완료:', newCompany.rows[0].name);
-        } else {
-            companyId = company.rows[0].id;
-            console.log('기존 회사 사용:', company.rows[0].name);
+            console.log('✨ 새 회사 생성 완료:', newCompany.rows[0].name);
         }
 
         // 6. 이메일 도메인 검증
@@ -104,10 +106,10 @@ const register = async (req, res) => {
         // 9. users INSERT
         const result = await pool.query(
             `INSERT INTO users 
-       (company_id, email, password, nickname, email_verified_yn, verification_token, token_expires_at)
+       (company_id, email, password, name, email_verified_yn, verification_token, token_expires_at)
        VALUES ($1, $2, $3, $4, 'N', $5, $6) 
-       RETURNING id, email, nickname, email_verified_yn`,
-            [companyId, email, hashedPassword, nickname, verificationToken, tokenExpiresAt]
+       RETURNING id, email, name, email_verified_yn`,
+            [companyId, email, hashedPassword, name, verificationToken, tokenExpiresAt]
         );
 
         console.log('사용자 생성 완료:', result.rows[0].email);
@@ -208,7 +210,7 @@ const login = async (req, res) => {
 
         // 2. 사용자 조회
         const result = await pool.query(
-            'SELECT id, email, password, nickname, role FROM users WHERE email = $1 AND deleted_yn = $2',
+            'SELECT id, email, password, name, role FROM users WHERE email = $1 AND deleted_yn = $2',
             [email, 'N']
         );
 
@@ -249,7 +251,7 @@ const login = async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                nickname: user.nickname,
+                name: user.name,
                 role: user.role
             }
         });
@@ -270,7 +272,7 @@ const getMe = async (req, res) => {
         const userId = req.user.userId;
 
         const result = await pool.query(
-            `SELECT id, email, nickname, profile_image_url, role, created_at 
+            `SELECT id, email, name, profile_image_url, role, created_at 
              FROM users 
              WHERE id = $1 AND deleted_yn = $2`,
             [userId, 'N']

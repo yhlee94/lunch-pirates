@@ -7,7 +7,7 @@ function Main({ user, onLogout }) {
             <div className="header">
                 <h1>🏴‍☠️ 점심 해적단</h1>
                 <div className="user-info">
-                    <span>{user.nickname || user.email}님 환영합니다!</span>
+                    <span>{user.name || user.email}님 환영합니다!</span>
                     <button onClick={onLogout} className="logout-btn">로그아웃</button>
                 </div>
             </div>
