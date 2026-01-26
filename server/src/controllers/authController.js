@@ -299,10 +299,145 @@ const getMe = async (req, res) => {
     }
 };
 
+// 비밀번호 재설정 요청
+const requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: '이메일을 입력해주세요'
+            });
+        }
+
+        // 사용자 확인
+        const result = await pool.query(
+            'SELECT * FROM users WHERE email = $1 AND deleted_yn = $2',
+            [email, 'N']
+        );
+
+        if (result.rows.length === 0) {
+            // 보안: 이메일이 없어도 같은 메시지 (계정 존재 여부 노출 방지)
+            return res.json({
+                success: true,
+                message: '비밀번호 재설정 링크가 이메일로 전송되었습니다'
+            });
+        }
+
+        const user = result.rows[0];
+
+        // 재설정 토큰 생성
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간
+
+        // DB 저장
+        await pool.query(
+            `UPDATE users 
+             SET reset_token = $1, reset_token_expires_at = $2
+             WHERE id = $3`,
+            [resetToken, resetTokenExpiresAt, user.id]
+        );
+
+        // 이메일 발송
+        await sendPasswordResetEmail(email, resetToken);
+
+        res.json({
+            success: true,
+            message: '비밀번호 재설정 링크가 이메일로 전송되었습니다'
+        });
+
+    } catch (error) {
+        console.error('비밀번호 재설정 요청 오류:', error);
+        res.status(500).json({
+            success: false,
+            message: '서버 오류가 발생했습니다'
+        });
+    }
+};
+
+// 비밀번호 재설정 (토큰 검증 + 비밀번호 변경)
+const resetPassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: '모든 필드를 입력해주세요'
+            });
+        }
+
+        // 비밀번호 유효성 검증
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: '비밀번호는 6자 이상이어야 합니다'
+            });
+        }
+
+        const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+        if (!specialCharPattern.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: '비밀번호에 특수문자를 포함해주세요'
+            });
+        }
+
+        // 토큰으로 사용자 찾기
+        const result = await pool.query(
+            `SELECT * FROM users 
+             WHERE reset_token = $1 
+             AND reset_token_expires_at > NOW() 
+             AND deleted_yn = 'N'`,
+            [token]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: '유효하지 않거나 만료된 재설정 링크입니다'
+            });
+        }
+
+        const user = result.rows[0];
+
+        // 비밀번호 해싱
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // 비밀번호 업데이트 + 토큰 삭제
+        await pool.query(
+            `UPDATE users 
+             SET password = $1,
+                 reset_token = NULL,
+                 reset_token_expires_at = NULL
+             WHERE id = $2`,
+            [hashedPassword, user.id]
+        );
+
+        console.log('비밀번호 재설정 완료:', user.email);
+
+        res.json({
+            success: true,
+            message: '비밀번호가 성공적으로 변경되었습니다'
+        });
+
+    } catch (error) {
+        console.error('비밀번호 재설정 오류:', error);
+        res.status(500).json({
+            success: false,
+            message: '서버 오류가 발생했습니다'
+        });
+    }
+};
+
+
 //(모든 함수 export)
 module.exports = {
     register,
     verifyEmail,
     login,
-    getMe
+    getMe,
+    requestPasswordReset,
+    resetPassword
 };

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import '../styles/Login.css';
 
-function Login({ onLoginSuccess, onShowRegister }) {
+function Login({ onLoginSuccess, onShowRegister, onShowForgotPassword }) {  // 추가!
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -80,7 +80,7 @@ function Login({ onLoginSuccess, onShowRegister }) {
                 <div className="footer-links">
                     <a href="#" onClick={(e) => {
                         e.preventDefault();
-                        alert('비밀번호 찾기 기능 준비중');
+                        onShowForgotPassword();
                     }}>
                         비밀번호 찾기
                     </a>
