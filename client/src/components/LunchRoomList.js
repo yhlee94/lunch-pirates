@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CreateRoomModal from './CreateRoomModal';
 import RoomCard from './RoomCard';
+import RoomDetailModal from './RoomDetailModal';
 
 
 function LunchRoomList({ user }) {
     const [rooms, setRooms] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState(null);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const roomsPerPage = 6;
@@ -24,8 +26,20 @@ function LunchRoomList({ user }) {
             });
 
             if (response.data.success) {
-                setRooms(response.data.rooms);
+                const updatedRooms = response.data.rooms;
+                setRooms(updatedRooms);
                 setTotalCount(response.data.total_count);
+
+                // 현재 열려있는 모달의 정보도 최신화
+                if (selectedRoom) {
+                    const freshRoom = updatedRooms.find(r => r.id === selectedRoom.id);
+                    if (freshRoom) {
+                        setSelectedRoom(freshRoom);
+                    } else {
+                        // 방이 사라졌다면 (삭제 등) 모달 닫기
+                        setSelectedRoom(null);
+                    }
+                }
             }
         } catch (error) {
             console.error('방 목록 조회 실패:', error);
@@ -107,7 +121,7 @@ function LunchRoomList({ user }) {
                                         <RoomCard
                                             key={room.id}
                                             room={room}
-                                            onJoin={() => fetchRooms()}
+                                            onJoin={() => setSelectedRoom(room)}
                                         />
                                     ))}
 
@@ -175,6 +189,16 @@ function LunchRoomList({ user }) {
                     user={user}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={handleRoomCreated}
+                />
+            )}
+
+            {/* Room Detail Modal */}
+            {selectedRoom && (
+                <RoomDetailModal
+                    user={user}
+                    room={selectedRoom}
+                    onClose={() => setSelectedRoom(null)}
+                    onSuccess={fetchRooms}
                 />
             )}
         </div>

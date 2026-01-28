@@ -78,9 +78,10 @@ exports.getRooms = async (req, res) => {
         // 방 목록을 불러오기 전에 유효기간 지난 방들 즉시 정리
         await exports.cleanupOldRooms();
 
-        const company_id = req.user.company_id; // JWT에서 추출
+        const userId = req.user.id;
+        const company_id = req.user.company_id;
 
-        // 같은 회사의 waiting 상태 방만 조회 + 참가 인원 수 계산
+        // 같은 회사의 waiting 상태 방만 조회 + 참가 인원 수 계산 + 본인 참여 여부 확인
         const result = await pool.query(
             `SELECT
                  lr.id,
@@ -95,7 +96,8 @@ exports.getRooms = async (req, res) => {
                  u.id as creator_id,
                  u.name as creator_name,
                  u.profile_image_url as creator_profile_image,
-                 COUNT(p.id) as current_participants
+                 COUNT(p.id) as current_participants,
+                 EXISTS(SELECT 1 FROM participants WHERE room_id = lr.id AND user_id = $2 AND left_at IS NULL) as is_participant
              FROM lunch_rooms lr
                       JOIN users u ON lr.creator_id = u.id
                       LEFT JOIN participants p ON lr.id = p.room_id AND p.left_at IS NULL
@@ -104,7 +106,7 @@ exports.getRooms = async (req, res) => {
                AND lr.deleted_yn = 'N'
              GROUP BY lr.id, u.id, u.name, u.profile_image_url
              ORDER BY lr.created_at DESC`,
-            [company_id]
+            [company_id, userId]
         );
 
         const rooms = result.rows.map(room => ({
@@ -118,6 +120,7 @@ exports.getRooms = async (req, res) => {
             max_participants: room.max_participants,
             departure_time: room.departure_time,
             status: room.status,
+            is_participant: room.is_participant,
             creator: {
                 id: room.creator_id,
                 name: room.creator_name,
@@ -166,5 +169,153 @@ exports.cleanupOldRooms = async () => {
         }
     } catch (error) {
         console.error('방 자동 정리 중 에러:', error);
+    }
+};
+
+// 방 참가 (승선)
+exports.joinRoom = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const roomId = req.params.id;
+        const userId = req.user.id;
+
+        await client.query('BEGIN');
+
+        // 1. 방 정보 및 현재 참가 인원 조회
+        const roomResult = await client.query(
+            `SELECT lr.*, COUNT(p.id) as current_participants
+             FROM lunch_rooms lr
+             LEFT JOIN participants p ON lr.id = p.room_id AND p.left_at IS NULL
+             WHERE lr.id = $1 AND lr.deleted_yn = 'N'
+             GROUP BY lr.id`,
+            [roomId]
+        );
+
+        if (roomResult.rows.length === 0) {
+            return res.status(404).json({ success: false, message: '존재하지 않거나 이미 사라진 배입니다.' });
+        }
+
+        const room = roomResult.rows[0];
+
+        // 2. 이미 출항 시간이 지났는지 체크
+        const now = new Date();
+        const departureTime = new Date(room.departure_time);
+        if (departureTime < now) {
+            return res.status(400).json({ success: false, message: '이미 출항한 해적선입니다!' });
+        }
+
+        // 3. 이미 참가 중인지 체크
+        const checkPart = await client.query(
+            'SELECT id FROM participants WHERE room_id = $1 AND user_id = $2 AND left_at IS NULL',
+            [roomId, userId]
+        );
+        if (checkPart.rows.length > 0) {
+            return res.status(400).json({ success: false, message: '이미 승선 중인 해적입니다!' });
+        }
+
+        // 4. 인원 정원 체크
+        if (parseInt(room.current_participants) >= room.max_participants) {
+            return res.status(400).json({ success: false, message: '배가 이미 꽉 찼습니다! 다음 배를 기다려주세요.' });
+        }
+
+        // 5. 참가 처리
+        await client.query(
+            'INSERT INTO participants (room_id, user_id, joined_at) VALUES ($1, $2, NOW())',
+            [roomId, userId]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: '승선에 성공했습니다! 🏴‍☠️' });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('승선 에러:', error);
+        res.status(500).json({ success: false, message: '승선 처리 중 오류가 발생했습니다.' });
+    } finally {
+        client.release();
+    }
+};
+
+// 방 퇴장 (하선)
+exports.leaveRoom = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const roomId = req.params.id;
+        const userId = req.user.id;
+
+        const result = await client.query(
+            `UPDATE participants
+             SET left_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
+                 exit_type = 'cancel'
+             WHERE room_id = $1 AND user_id = $2 AND left_at IS NULL
+             RETURNING id`,
+            [roomId, userId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({ success: false, message: '승선 중인 방이 아닙니다.' });
+        }
+
+        res.json({ success: true, message: '무사히 하선했습니다. 👋' });
+
+    } catch (error) {
+        console.error('하선 에러:', error);
+        res.status(500).json({ success: false, message: '하선 처리 중 오류가 발생했습니다.' });
+    } finally {
+        client.release();
+    }
+};
+
+// 방 삭제 (향해 취소)
+exports.deleteRoom = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const roomId = req.params.id;
+        const userId = req.user.id;
+
+        await client.query('BEGIN');
+
+        // 1. 방장인지 확인
+        const roomCheck = await client.query(
+            'SELECT creator_id FROM lunch_rooms WHERE id = $1 AND deleted_yn = \'N\'',
+            [roomId]
+        );
+
+        if (roomCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ success: false, message: '존재하지 않는 배입니다.' });
+        }
+
+        if (roomCheck.rows[0].creator_id !== userId) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ success: false, message: '방장만 항해를 취소할 수 있습니다.' });
+        }
+
+        // 2. 방 삭제 처리 (deleted_yn = 'Y')
+        await client.query(
+            `UPDATE lunch_rooms 
+             SET deleted_yn = 'Y', status = 'finished', updated_at = NOW() 
+             WHERE id = $1`,
+            [roomId]
+        );
+
+        // 3. 참가자들 처리 (선택사항: 알림 등을 위해 처리할 수 있음)
+        await client.query(
+            `UPDATE participants 
+             SET left_at = (NOW() AT TIME ZONE 'Asia/Seoul'), 
+                 exit_type = 'cancel' 
+             WHERE room_id = $1 AND left_at IS NULL`,
+            [roomId]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: '항해가 취소되었습니다. 🌊' });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('방 삭제 에러:', error);
+        res.status(500).json({ success: false, message: '항해 취소 중 오류가 발생했습니다.' });
+    } finally {
+        client.release();
     }
 };
