@@ -19,7 +19,14 @@ exports.verifyToken = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // 3. 검증된 사용자 정보를 req에 저장
-        req.user = decoded;
+        req.user = {
+            id: decoded.id,
+            email: decoded.email,
+            company_id: decoded.company_id,
+            companyLatitude: decoded.companyLatitude,
+            companyLongitude: decoded.companyLongitude
+        };
+
 
         // 4. 다음 미들웨어/컨트롤러로 진행
         next();

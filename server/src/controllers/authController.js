@@ -208,9 +208,13 @@ const login = async (req, res) => {
             });
         }
 
-        // 2. 사용자 조회
+        // 2. 사용자 & 회사 정보 조회 (JOIN 추가)
         const result = await pool.query(
-            'SELECT id, email, password, name, role FROM users WHERE email = $1 AND deleted_yn = $2',
+            `SELECT u.id, u.email, u.password, u.name, u.role, u.company_id, 
+                    c.latitude as company_latitude, c.longitude as company_longitude
+             FROM users u
+             JOIN companies c ON u.company_id = c.id
+             WHERE u.email = $1 AND u.deleted_yn = $2`,
             [email, 'N']
         );
 
@@ -233,15 +237,18 @@ const login = async (req, res) => {
             });
         }
 
-        // 4. JWT 토큰 생성
+        // 4. JWT 토큰 생성 (위도/경도 추가)
         const token = jwt.sign(
             {
-                userId: user.id,
+                id: user.id,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                company_id: user.company_id,
+                companyLatitude: user.company_latitude,
+                companyLongitude: user.company_longitude
             },
             process.env.JWT_SECRET,
-            { expiresIn: '7d' } // 7일 유효
+            { expiresIn: '7d' }
         );
 
         res.json({
@@ -252,7 +259,10 @@ const login = async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role
+                role: user.role,
+                company_id: user.company_id,
+                companyLatitude: user.company_latitude,
+                companyLongitude: user.company_longitude
             }
         });
 

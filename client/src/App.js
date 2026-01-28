@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
-import Main from './components/Main';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import EmailVerification from './components/EmailVerification';
+import Main from './components/Main';
 import './App.css';
 
 function App() {
@@ -32,35 +32,35 @@ function App() {
   return (
       <BrowserRouter>
         <div className="App">
-          <Routes>
-            {/* 이메일 인증 (라우터 필요) */}
-            <Route path="/verify-email" element={<EmailVerification />} />
+            <Routes>
+                {/* 이메일 인증 (라우터 필요) */}
+                <Route path="/verify-email" element={<EmailVerification />} />
 
-            {/* 비밀번호 재설정 (라우터 필요) */}e
-            <Route path="/reset-password" element={<ResetPassword />} />
+                {/* 비밀번호 재설정 (라우터 필요) */}
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* 기본 화면들 (라우터 불필요, 기존 방식 유지) */}
-            <Route path="*" element={
-              user ? (
-                  <Main user={user} onLogout={handleLogout} />
-              ) : showForgotPassword ? (
-                  <ForgotPassword
-                      onBackToLogin={() => setShowForgotPassword(false)}
-                  />
-              ) : showRegister ? (
-                  <Register
-                      onRegisterSuccess={() => setShowRegister(false)}
-                      onBackToLogin={() => setShowRegister(false)}
-                  />
-              ) : (
-                  <Login
-                      onLoginSuccess={handleLoginSuccess}
-                      onShowRegister={() => setShowRegister(true)}
-                      onShowForgotPassword={() => setShowForgotPassword(true)}
-                  />
-              )
-            } />
-          </Routes>
+                {/* 기본 화면들 (라우터 불필요, 기존 방식 유지) */}
+                <Route path="*" element={
+                    user ? (
+                        <Main user={user} onLogout={handleLogout} />
+                    ) : showForgotPassword ? (
+                    <ForgotPassword
+                    onBackToLogin={() => setShowForgotPassword(false)}
+                />
+                ) : showRegister ? (
+                <Register
+                    onRegisterSuccess={() => setShowRegister(false)}
+                    onBackToLogin={() => setShowRegister(false)}
+                />
+                ) : (
+                <Login
+                    onLoginSuccess={handleLoginSuccess}
+                    onShowRegister={() => setShowRegister(true)}
+                    onShowForgotPassword={() => setShowForgotPassword(true)}
+                />
+                )
+                } />
+        </Routes>
         </div>
       </BrowserRouter>
   );
