@@ -13,7 +13,6 @@ function RoomDetailModal({ user, room, onClose, onSuccess }) {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
-                alert(response.data.message);
                 onSuccess(); // 목록 갱신 (모달은 유지됨)
             }
         } catch (error) {
@@ -24,7 +23,6 @@ function RoomDetailModal({ user, room, onClose, onSuccess }) {
     };
 
     const handleLeave = async () => {
-        if (!window.confirm('정말 이 해적선에서 하선하시겠습니까?')) return;
         try {
             setIsSubmitting(true);
             const token = localStorage.getItem('token');
@@ -32,7 +30,6 @@ function RoomDetailModal({ user, room, onClose, onSuccess }) {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
-                alert(response.data.message);
                 onSuccess(); // 목록 갱신 (모달은 유지됨)
             }
         } catch (error) {
@@ -77,6 +74,49 @@ function RoomDetailModal({ user, room, onClose, onSuccess }) {
                     alt="Pirate Ship"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
+
+                {/* 캐릭터들 배치 (최대 6명) */}
+                {(() => {
+                    // 각 순서별 캐릭터 위치 및 사이즈 정의
+                    const positions = [
+                        { left: '27.4%', top: '70%', size: 'w-20', labelSize: 'text-[10px]' }, // 1. 방장 (선장)
+                        { left: '42%', top: '77%', size: 'w-20', labelSize: 'text-[10px]' },   // 2. 선원 1 (갑판)
+                        { left: '52%', top: '79%', size: 'w-20', labelSize: 'text-[10px]' },   // 3. 선원 2 (갑판)
+                        { left: '62%', top: '81%', size: 'w-20', labelSize: 'text-[10px]' },   // 4. 선원 3 (갑판)
+                        { left: '72%', top: '82%', size: 'w-20', labelSize: 'text-[10px]' },   // 5. 선원 4 (선실 앞)
+                        { left: '82%', top: '52%', size: 'w-16', labelSize: 'text-[9px]' },    // 6. 선원 5 (선실 위)
+                    ];
+
+                    const creator = room.participants?.find(p => p.id === room.creator.id);
+                    const others = room.participants?.filter(p => p.id !== room.creator.id) || [];
+                    const displayPirates = creator ? [creator, ...others] : others;
+
+                    return displayPirates.slice(0, 6).map((pirate, index) => (
+                        <div
+                            key={pirate.id}
+                            style={{
+                                left: positions[index].left,
+                                top: positions[index].top,
+                            }}
+                            className="absolute -translate-x-1/2 -translate-y-full flex flex-col items-center pointer-events-none z-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5"
+                        >
+                            {/* 이름표: 상하좌우 완벽하게 중앙 정렬 */}
+                            <div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-full shadow-lg border border-white/20 mb-1 flex items-center justify-center min-h-[22px]">
+                                <span className={`${positions[index].labelSize} font-bold text-white whitespace-nowrap leading-none`}>
+                                    {pirate.name}
+                                </span>
+                            </div>
+                            {/* 캐릭터 이미지: 사이즈를 명확하게 고정 */}
+                            <div className={`${positions[index].size} flex items-end justify-center`}>
+                                <img
+                                    src={pirate.equipped_item_image_url || '/assets/Character/basicFoam.png'}
+                                    alt={pirate.name}
+                                    className="w-full h-auto drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)] transition-transform hover:scale-110"
+                                />
+                            </div>
+                        </div>
+                    ));
+                })()}
 
                 {/* Subtle dark overlay for readability */}
                 <div className="absolute inset-0 bg-black/10"></div>

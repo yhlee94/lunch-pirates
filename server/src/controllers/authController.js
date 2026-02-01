@@ -106,10 +106,17 @@ const register = async (req, res) => {
         // 9. users INSERT
         const result = await pool.query(
             `INSERT INTO users 
-       (company_id, email, password, name, email_verified_yn, verification_token, token_expires_at)
-       VALUES ($1, $2, $3, $4, 'N', $5, $6) 
+       (company_id, email, password, name, email_verified_yn, verification_token, token_expires_at, equipped_item_id)
+       VALUES ($1, $2, $3, $4, 'N', $5, $6, 1) 
        RETURNING id, email, name, email_verified_yn`,
             [companyId, email, hashedPassword, name, verificationToken, tokenExpiresAt]
+        );
+
+        const newUserId = result.rows[0].id;
+        // 10. user_items 에도 기본 아이템 지급 기록 추가 (인벤토리에 나오게 하기 위해)
+        await pool.query(
+            `INSERT INTO user_items (user_id, item_id) VALUES ($1, 1)`,
+            [newUserId]
         );
 
         console.log('사용자 생성 완료:', result.rows[0].email);

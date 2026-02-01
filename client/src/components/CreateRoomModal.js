@@ -377,7 +377,7 @@ function CreateRoomModal({ onClose, onSuccess, user }) {
                                         <span className="material-symbols-rounded text-sm">group</span>최대 인원
                                     </label>
                                     <div className="grid grid-cols-4 gap-2 bg-game-dark-blue/40 p-2 rounded-2xl border border-white/10 backdrop-blur-sm shadow-inner">
-                                        {[2, 4, 6, 8].map((num) => (
+                                        {[2, 3, 4, 6].map((num) => (
                                             <button
                                                 key={num}
                                                 onClick={() => setMaxParticipants(num)}

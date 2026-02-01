@@ -81,7 +81,7 @@ exports.getRooms = async (req, res) => {
         const userId = req.user.id;
         const company_id = req.user.company_id;
 
-        // 같은 회사의 waiting 상태 방만 조회 + 참가 인원 수 계산 + 본인 참여 여부 확인
+        // 같은 회사의 waiting 상태 방만 조회 + 상세 참가자 정보 + 본인 참여 여부 확인
         const result = await pool.query(
             `SELECT
                  lr.id,
@@ -96,38 +96,53 @@ exports.getRooms = async (req, res) => {
                  u.id as creator_id,
                  u.name as creator_name,
                  u.profile_image_url as creator_profile_image,
-                 COUNT(p.id) as current_participants,
+                 i.image_url as creator_equipped_item_image,
+                 (
+                     SELECT JSON_AGG(JSON_BUILD_OBJECT(
+                             'id', u2.id,
+                             'name', u2.name,
+                             'equipped_item_image_url', i2.image_url
+                         ))
+                     FROM participants p2
+                              JOIN users u2 ON p2.user_id = u2.id
+                              LEFT JOIN items i2 ON u2.equipped_item_id = i2.id
+                     WHERE p2.room_id = lr.id AND p2.left_at IS NULL
+                 ) as participants_info,
                  EXISTS(SELECT 1 FROM participants WHERE room_id = lr.id AND user_id = $2 AND left_at IS NULL) as is_participant
              FROM lunch_rooms lr
                       JOIN users u ON lr.creator_id = u.id
-                      LEFT JOIN participants p ON lr.id = p.room_id AND p.left_at IS NULL
+                      LEFT JOIN items i ON u.equipped_item_id = i.id
              WHERE lr.company_id = $1
                AND lr.status = 'waiting'
                AND lr.deleted_yn = 'N'
-             GROUP BY lr.id, u.id, u.name, u.profile_image_url
              ORDER BY lr.created_at DESC`,
             [company_id, userId]
         );
 
-        const rooms = result.rows.map(room => ({
-            id: room.id,
-            title: `${room.restaurant_name} 출항해요`,
-            restaurant_name: room.restaurant_name,
-            restaurant_address: room.restaurant_address,
-            latitude: room.latitude,
-            longitude: room.longitude,
-            current_participants: parseInt(room.current_participants),
-            max_participants: room.max_participants,
-            departure_time: room.departure_time,
-            status: room.status,
-            is_participant: room.is_participant,
-            creator: {
-                id: room.creator_id,
-                name: room.creator_name,
-                profile_image_url: room.creator_profile_image
-            },
-            created_at: room.created_at
-        }));
+        const rooms = result.rows.map(room => {
+            const participants = room.participants_info || [];
+            return {
+                id: room.id,
+                title: `${room.restaurant_name} 출항해요`,
+                restaurant_name: room.restaurant_name,
+                restaurant_address: room.restaurant_address,
+                latitude: room.latitude,
+                longitude: room.longitude,
+                current_participants: participants.length,
+                max_participants: room.max_participants,
+                departure_time: room.departure_time,
+                status: room.status,
+                is_participant: room.is_participant,
+                creator: {
+                    id: room.creator_id,
+                    name: room.creator_name,
+                    profile_image_url: room.creator_profile_image,
+                    equipped_item_image_url: room.creator_equipped_item_image
+                },
+                participants: participants,
+                created_at: room.created_at
+            };
+        });
 
         res.json({
             success: true,
