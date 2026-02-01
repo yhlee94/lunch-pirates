@@ -5,7 +5,7 @@ import RoomCard from './RoomCard';
 import RoomDetailModal from './RoomDetailModal';
 
 
-function LunchRoomList({ user }) {
+function LunchRoomList({ user, onNavigateToMyRoom }) {
     const [rooms, setRooms] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -99,7 +99,10 @@ function LunchRoomList({ user }) {
                             <span className="material-symbols-rounded">leaderboard</span>
                             <span className="font-bold">맛집 랭킹</span>
                         </button>
-                        <button className="bg-card-blue text-white px-6 py-3 rounded-retro border-4 border-blue-800 shadow-btn-blue hover:brightness-110 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2">
+                        <button
+                            onClick={onNavigateToMyRoom}
+                            className="bg-card-blue text-white px-6 py-3 rounded-retro border-4 border-blue-800 shadow-btn-blue hover:brightness-110 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
+                        >
                             <span className="material-symbols-rounded">person</span>
                             <span className="font-bold">마이룸</span>
                         </button>
