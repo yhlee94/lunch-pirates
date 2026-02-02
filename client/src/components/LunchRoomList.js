@@ -12,6 +12,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [randomImageIndex] = useState(() => Math.floor(Math.random() * 5) + 1);
     const roomsPerPage = 6;
 
     // 방 목록 불러오기
@@ -68,122 +69,107 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
     const emptySlots = Math.max(0, roomsPerPage - currentRooms.length);
 
     return (
-        <div className="h-full flex items-center justify-center p-4 transition-colors duration-300">
-            <div className="w-full max-w-5xl aspect-[4/3] bg-primary retro-border rounded-retro shadow-2xl flex flex-col overflow-hidden relative">
+        <div className="h-full bg-surface-light text-slate-800 font-sans antialiased selection:bg-primary selection:text-white overflow-hidden relative">
+            {/* Background Blobs */}
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-primary/20 rounded-full blur-[100px]"></div>
+                <div className="absolute top-[10%] -right-[20%] w-[60%] h-[60%] bg-blue-400/20 rounded-full blur-[100px]"></div>
+                <div className="absolute bottom-[0%] left-[20%] w-[50%] h-[50%] bg-accent-green/30 rounded-full blur-[80px]"></div>
+            </div>
 
-                {/* Header Area */}
-                <div className="p-6 flex items-center justify-between gap-4">
-                    <div className="flex gap-3">
-                        <button
-                            className="bg-gradient-to-b from-retro-yellow to-retro-orange text-white px-6 py-3 rounded-retro border-4 border-orange-700 shadow-btn-orange hover:brightness-110 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2 group"
-                            onClick={() => setShowCreateModal(true)}
-                        >
-                            <span className="material-symbols-rounded font-bold">add_circle</span>
-                            <span className="text-xl font-bold tracking-wide drop-shadow-md">방 만들기</span>
-                        </button>
-
-                        <div className="bg-slate-900/40 backdrop-blur-sm border-2 border-white/30 rounded-retro px-6 py-3 flex items-center gap-4">
-                            <span className="material-symbols-rounded text-retro-yellow text-3xl">restaurant</span>
-                            <div className="flex flex-col leading-none">
-                                <span className="text-white text-xs opacity-80 font-semibold uppercase">현재 방 개수</span>
-                                <span className="text-white text-2xl font-bold tracking-wider">{totalCount} / 50</span>
-                            </div>
-                            <button className="bg-sky-500 p-1 rounded-lg text-white hover:bg-sky-400 transition-colors">
-                                <span className="material-symbols-rounded">arrow_drop_down</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button className="bg-card-blue text-white px-6 py-3 rounded-retro border-4 border-blue-800 shadow-btn-blue hover:brightness-110 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2">
-                            <span className="material-symbols-rounded">leaderboard</span>
-                            <span className="font-bold">맛집 랭킹</span>
-                        </button>
-                        <button
-                            onClick={onNavigateToMyRoom}
-                            className="bg-card-blue text-white px-6 py-3 rounded-retro border-4 border-blue-800 shadow-btn-blue hover:brightness-110 active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
-                        >
-                            <span className="material-symbols-rounded">person</span>
-                            <span className="font-bold">마이룸</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Content Area */}
-                <div className="flex-1 px-6 pb-6">
-                    <div className="h-full bg-blue-500/30 rounded-retro p-4 border-4 border-blue-700/50">
-                        <div className="grid grid-cols-2 grid-rows-3 gap-4 h-full">
-                            {loading ? (
-                                <div className="col-span-2 row-span-3 flex flex-col items-center justify-center text-white">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-                                    <span className="text-xl font-bold">로딩 중...</span>
+            <div className="relative z-10 max-w-md mx-auto h-screen flex flex-col px-6 pt-6 pb-8">
+                {/* Welcome Card Section */}
+                <div className="grid grid-cols-6 grid-rows-2 gap-3 mb-8 h-auto shrink-0">
+                    <div className="col-span-6 row-span-2 glass-morphism rounded-[2rem] p-6 relative overflow-hidden shadow-glass group">
+                        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent pointer-events-none"></div>
+                        <div className="relative z-10 flex flex-col justify-between h-full items-start text-left">
+                            <div className="max-w-[45%]">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wider uppercase border border-primary/20">Today's lunch</span>
                                 </div>
-                            ) : (
-                                <>
-                                    {currentRooms.map(room => (
-                                        <RoomCard
-                                            key={room.id}
-                                            room={room}
-                                            onJoin={() => setSelectedRoom(room)}
-                                        />
-                                    ))}
-
-                                    {/* Empty Slots */}
-                                    {[...Array(emptySlots)].map((_, index) => (
-                                        <div key={`empty-${index}`} className="bg-card-blue/50 rounded-retro border-4 border-blue-900/30 border-dashed p-4 flex gap-4 items-center justify-center group hover:bg-card-blue transition-all cursor-pointer">
-                                            <span className="text-blue-200 group-hover:text-white font-bold text-xl uppercase tracking-widest opacity-50 group-hover:opacity-100">Empty Slot</span>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
+                                <h1 className="text-3xl font-black text-slate-900 leading-[1.1] tracking-tight text-left">
+                                    {user ? user.name : '게스트'}님,<br />
+                                    <span className="text-primary">맛있는 하루</span><br />되세요!
+                                </h1>
+                            </div>
+                        </div>
+                        <div className="absolute -right-2 top-[23%] -translate-y-1/2 w-56 h-56 animate-float z-0">
+                            <img alt="3D Food" className="w-full h-full object-contain drop-shadow-2xl opacity-90" src={`/assets/RoomList/${randomImageIndex}.png`} style={{ transform: 'scale(1.2)' }} />
                         </div>
                     </div>
                 </div>
 
-                {/* Footer / Pagination */}
-                <div className="bg-blue-900/40 p-4 flex justify-center items-center gap-6">
+                {/* Quick Actions */}
+                <div className="grid grid-cols-3 gap-3 mb-8 shrink-0">
                     <button
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className={`bg-card-blue text-white p-2 rounded-xl border-4 border-blue-800 shadow-retro transition-all ${currentPage === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:brightness-110 active:scale-95 cursor-pointer'
-                            }`}
+                        onClick={onNavigateToMyRoom}
+                        className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80"
                     >
-                        <span className="material-symbols-rounded text-3xl">chevron_left</span>
+                        <span className="material-symbols-rounded text-primary text-2xl">account_circle</span>
+                        <span className="text-xs font-bold text-slate-600">마이룸</span>
                     </button>
-                    <div className="flex gap-2">
-                        {[...Array(totalPages)].map((_, i) => (
-                            <div
-                                key={i}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${currentPage === i + 1 ? 'bg-retro-yellow scale-125' : 'bg-white/30'
-                                    }`}
-                            ></div>
-                        ))}
-                    </div>
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                        className={`bg-card-blue text-white p-2 rounded-xl border-4 border-blue-800 shadow-retro transition-all ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:brightness-110 active:scale-95 cursor-pointer'
-                            }`}
-                    >
-                        <span className="material-symbols-rounded text-3xl">chevron_right</span>
+                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm relative active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                        <div className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                        <span className="material-symbols-rounded text-slate-800 text-2xl">notifications</span>
+                        <span className="text-xs font-bold text-slate-600">알림</span>
+                    </button>
+                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                        <span className="material-symbols-rounded text-accent-orange text-2xl">savings</span>
+                        <span className="text-xs font-bold text-slate-600 mt-1">140 P</span>
                     </button>
                 </div>
 
-
-
-                {/* Server Info (Fixed) */}
-                <div
-                    className="absolute bottom-6 right-6 flex items-center gap-4 bg-slate-900/80 backdrop-blur-md px-6 py-3 rounded-full border-2 border-white/20 text-white shadow-2xl z-10">
-                    <div className="flex items-center gap-2 border-r border-white/20 pr-4">
-                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-semibold">SERVER: running</span>
+                {/* Room List Section */}
+                <div className="flex-1 flex flex-col min-h-0">
+                    <div className="flex justify-between items-end mb-4 px-1">
+                        <h2 className="text-xl font-bold text-slate-800">모집 중인 모임</h2>
+                        <span className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors cursor-pointer">전체보기</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-semibold">SERVER: running</span>
+
+                    <div className="overflow-x-auto hide-scrollbar pb-6 -mx-6 px-6 flex items-center space-x-5 h-full">
+                        {loading ? (
+                            <div className="w-full flex justify-center items-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                            </div>
+                        ) : rooms.length === 0 ? (
+                            <div className="w-full flex justify-center items-center text-slate-500 font-bold">
+                                현재 모집 중인 방이 없습니다.
+                            </div>
+                        ) : (
+                            rooms.map(room => (
+                                <RoomCard
+                                    key={room.id}
+                                    room={room}
+                                    onJoin={() => setSelectedRoom(room)}
+                                />
+                            ))
+                        )}
+                        <div className="w-2"></div>
                     </div>
                 </div>
 
+                {/* Create Room Button (Bottom) */}
+                <div className="mt-4 shrink-0 relative">
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="w-full relative group overflow-hidden rounded-[2rem] p-0 transition-all duration-300 active:scale-[0.98]"
+                    >
+                        <div className="absolute inset-0 bg-primary/90 backdrop-blur-xl z-0"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary-bright z-0 opacity-80"></div>
+                        <div className="absolute inset-0 border border-white/30 rounded-[2rem] z-20"></div>
+                        <div className="absolute -inset-[2px] rounded-[2.1rem] bg-gradient-to-r from-accent-green via-primary to-accent-orange opacity-50 blur-sm z-[-1] animate-pulse"></div>
+                        <div className="relative z-10 flex items-center justify-between p-1 pl-8 pr-2 h-20">
+                            <div className="flex flex-col items-start text-left">
+                                <span className="text-accent-green text-[10px] font-black uppercase tracking-widest mb-1">New Event</span>
+                                <span className="text-white text-xl font-bold tracking-tight">모임 만들기</span>
+                            </div>
+                            <div className="h-16 w-16 bg-white/20 rounded-[1.6rem] flex items-center justify-center border border-white/30 shadow-lg group-hover:bg-white/30 transition-colors backdrop-blur-md">
+                                <span className="material-symbols-rounded text-white text-4xl group-hover:rotate-90 transition-transform duration-500">add</span>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-[shine_1.5s_infinite]"></div>
+                    </button>
+                </div>
             </div>
 
             {/* Create Room Modal */}
@@ -206,6 +192,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
             )}
         </div>
     );
+
 }
 
 export default LunchRoomList;

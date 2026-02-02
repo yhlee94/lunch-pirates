@@ -1,7 +1,6 @@
 // client/src/components/Register.js
 import React, { useState, useEffect } from 'react';
 import CompanySearchModal from './CompanySearchModal';
-import '../styles/Register.css';
 
 function Register({ onRegisterSuccess, onBackToLogin }) {
     const [formData, setFormData] = useState({
@@ -66,8 +65,6 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
         });
     };
 
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -123,14 +120,12 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
             const data = await response.json();
 
             if (response.ok) {
-                if (response.ok) {
-                    setSuccessMessage(
-                        `회원가입 성공! 🎉\n\n` +
-                        `인증 메일이 발송되었습니다.\n` +
-                        `📧 ${formData.email}\n\n` +
-                        `메일함을 확인해주세요.`
-                    );
-                }
+                setSuccessMessage(
+                    `회원가입 성공! 🎉\n\n` +
+                    `인증 메일이 발송되었습니다.\n` +
+                    `📧 ${formData.email}\n\n` +
+                    `메일함을 확인해주세요.`
+                );
             } else {
                 setError(data.message || '회원가입에 실패했습니다.');
             }
@@ -143,8 +138,8 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
     };
 
     return (
-        <div className="register-container">
-            {/* 회사 검색 모달 (추가!) */}
+        <div className="bg-white min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 transition-colors duration-300">
+            {/* 회사 검색 모달 */}
             {showModal && (
                 <CompanySearchModal
                     onSelectCompany={handleSelectCompany}
@@ -152,113 +147,160 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                 />
             )}
 
-            <div className="register-card">
-                <div className="logo-section">
-                    <div className="logo">🏴‍☠️</div>
-                    <h1 className="app-title">점심 해적단 가입</h1>
-                    <p className="subtitle">새로운 해적이 되어보세요!</p>
+            <main className="w-full max-w-md mx-auto relative z-10">
+                <div className="flex flex-col items-center mb-6">
+                    <div className="relative w-32 h-32 mb-4">
+                        <img
+                            alt="Otter Mascot"
+                            className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white z-10 relative transform hover:scale-105 transition-transform duration-300"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsepEt48BYXVwcDOWveEy7FeZWKHgW8dsWYInS3NMBxfu4m-CwFOvfkyJi9BOFSBX3jAoBX5IqZ4vdPL_cMyFJ4RUpWXHYEIHWt3Aapwd2EjtvBVK3E1Y2C0XHvGqHDF5Id4OzJJfPpaNfblvUfV7sDN9d2f7rIlJlrZHWnB1JYHDk03-U-y2Q8tu2oZNke4uCCCyoCd6XfNkXajZhnl4yp3UxGp0_XNuLw2ZErcEiLLIkJH1PDiKQnadaFtU3UEyASSJ_Oeq0YGw"
+                        />
+                        <div className="absolute inset-0 bg-primary opacity-20 blur-xl rounded-full scale-125"></div>
+                        <div className="absolute -top-2 -right-2 bg-white p-1.5 rounded-full shadow-md z-20">
+                            <span className="material-icons-round text-primary text-xl">smart_toy</span>
+                        </div>
+                    </div>
+                    <h1 className="text-3xl font-black text-center text-primary mb-1 tracking-tight">
+                        점심 해적단 가입
+                    </h1>
+                    <p className="text-slate-500 text-center text-sm font-medium">
+                        새로운 해적이 되어보세요!
+                    </p>
                 </div>
 
-                {successMessage && (
-                    <div className="success-message">
-                        {successMessage}
-                    </div>
-                )}
-
-                {!successMessage && (
-                    <form onSubmit={handleSubmit} className="register-form">
-                        {/* 회사 검색 필드 (수정!) */}
-                        <div className="company-field">
-                            <input
-                                type="text"
-                                name="companyName"
-                                placeholder="회사를 검색해주세요"
-                                value={formData.companyName}
-                                className="input-field"
-                                readOnly
-                                required
-                            />
-                            <button
-                                type="button"
-                                className="search-company-button"
-                                onClick={() => setShowModal(true)}
-                            >
-                                🔍 검색
-                            </button>
+                <div className="bg-white rounded-3xl shadow-lg p-6 md:p-8 border border-slate-100">
+                    {successMessage ? (
+                        <div className="success-message whitespace-pre-line text-center text-blue-600 font-medium leading-relaxed">
+                            {successMessage}
                         </div>
-
-                        {/* 카카오 지도 추가! */}
-                        {formData.companyLatitude && formData.companyLongitude && (
-                            <div className="company-map-section">
-                                <div id="company-map" className="company-map"></div>
-                                <div className="company-address">
-                                    📍 {formData.companyAddress}
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* 회사 검색 및 지도 */}
+                            <div className="flex gap-3">
+                                <div className="relative flex-grow">
+                                    <input
+                                        className="w-full pl-4 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all placeholder-gray-400 shadow-sm cursor-pointer"
+                                        placeholder="회사를 검색해주세요"
+                                        type="text"
+                                        name="companyName"
+                                        value={formData.companyName}
+                                        readOnly
+                                        onClick={() => setShowModal(true)}
+                                    />
                                 </div>
+                                <button
+                                    className="flex-none bg-primary hover:bg-opacity-90 text-white px-5 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 min-w-[80px]"
+                                    type="button"
+                                    onClick={() => setShowModal(true)}
+                                >
+                                    <span className="material-icons-round text-sm">search</span>
+                                    검색
+                                </button>
                             </div>
-                        )}
 
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="회사 이메일 (예: pirate@kakao.com)"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
+                            {formData.companyLatitude && formData.companyLongitude && (
+                                <div className="w-full h-40 rounded-xl overflow-hidden border border-slate-200 mb-4 shadow-sm relative">
+                                    <div id="company-map" className="w-full h-full"></div>
+                                    <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm p-2 text-xs font-medium text-slate-600 border-t border-slate-100">
+                                        📍 {formData.companyAddress}
+                                    </div>
+                                </div>
+                            )}
 
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="실명 (예: 홍길동)"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="input-field"
-                            maxLength="50"
-                            required
-                        />
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+                                    <span className="material-icons-round text-lg">mail</span>
+                                </div>
+                                <input
+                                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all placeholder-gray-400 shadow-sm"
+                                    placeholder="회사 이메일 (예: pirate@kakao.com)"
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="비밀번호 (특수문자 포함 6자 이상)"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+                                    <span className="material-icons-round text-lg">badge</span>
+                                </div>
+                                <input
+                                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all placeholder-gray-400 shadow-sm"
+                                    placeholder="실명 (예: 홍길동)"
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    maxLength="50"
+                                    required
+                                />
+                            </div>
 
-                        <input
-                            type="password"
-                            name="passwordConfirm"
-                            placeholder="비밀번호 확인"
-                            value={formData.passwordConfirm}
-                            onChange={handleChange}
-                            className="input-field"
-                            required
-                        />
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+                                    <span className="material-icons-round text-lg">lock</span>
+                                </div>
+                                <input
+                                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all placeholder-gray-400 shadow-sm"
+                                    placeholder="비밀번호 (특수문자 포함 6자 이상)"
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-                        {error && <div className="error-message">{error}</div>}
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">
+                                    <span className="material-icons-round text-lg">lock_reset</span>
+                                </div>
+                                <input
+                                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all placeholder-gray-400 shadow-sm"
+                                    placeholder="비밀번호 확인"
+                                    type="password"
+                                    name="passwordConfirm"
+                                    value={formData.passwordConfirm}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-                        <button
-                            type="submit"
-                            className="register-button"
-                            disabled={loading}
-                        >
-                            {loading ? '가입 중...' : '회원가입'}
-                        </button>
-                    </form>
-                )}
+                            {error && (
+                                <div className="text-red-500 text-sm text-center font-medium bg-red-50 py-2 rounded-xl">
+                                    {error}
+                                </div>
+                            )}
 
-                <div className="footer-links">
-                    <a href="#" onClick={(e) => {
-                        e.preventDefault();
-                        onBackToLogin();
-                    }}>
-                        ← 로그인으로 돌아가기
+                            <div className="pt-4">
+                                <button
+                                    className="w-full bg-gradient-to-r from-primary to-[#7C7DFF] hover:to-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/40 transform transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md text-lg flex items-center justify-center gap-2"
+                                    type="submit"
+                                    disabled={loading}
+                                >
+                                    {loading ? '가입 중...' : '회원가입 완료'}
+                                    <span className="material-icons-round">arrow_forward</span>
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
+
+                <div className="mt-8 text-center">
+                    <a
+                        className="inline-flex items-center gap-1.5 text-primary font-bold text-sm hover:underline decoration-2 underline-offset-4 transition-all opacity-90 hover:opacity-100 cursor-pointer"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onBackToLogin();
+                        }}
+                    >
+                        <span className="material-icons-round text-base">arrow_back</span>
+                        로그인으로 돌아가기
                     </a>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

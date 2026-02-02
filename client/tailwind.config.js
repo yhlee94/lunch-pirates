@@ -7,24 +7,28 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                primary: "#0ea5e9",
-                "primary-dark": "#0284c7",
-                "accent-yellow": "#fbbf24",
-                "game-blue": "#00b4d8",
-                "game-dark-blue": "#0077b6",
-                "game-navy": "#03045e",
-                "background-light": "#caf0f8",
-                "background-dark": "#0f172a",
-                "surface-light": "#0096c7",
-                "surface-dark": "#1e293b",
-                "retro-yellow": "#FFD60A",
-                "retro-orange": "#FF9F1C",
-                "card-blue": "#0096FF",
-                "card-dark": "#1E3A8A",
+                primary: "#4F46E5", // Modern Indigo
+                "primary-bright": "#6366F1",
+                "accent-green": "#CCFFA4", // Acid Green
+                "accent-orange": "#FF9F43",
+                "glass-border": "rgba(255, 255, 255, 0.4)",
+                "surface-light": "#F0F4F8",
+                "surface-dark": "#0B0C15",
+                "primary-dark": "#0284c7", // Kept from original
+                "accent-yellow": "#fbbf24", // Kept from original
+                "game-blue": "#00b4d8", // Kept from original
+                "game-dark-blue": "#0077b6", // Kept from original
+                "game-navy": "#03045e", // Kept from original
+                "background-light": "#caf0f8", // Kept from original
+                "background-dark": "#0f172a", // Kept from original
+                "retro-yellow": "#FFD60A", // Kept from original
+                "retro-orange": "#FF9F1C", // Kept from original
+                "card-blue": "#0096FF", // Kept from original
+                "card-dark": "#1E3A8A", // Kept from original
             },
             fontFamily: {
+                sans: ["'Inter'", "'Noto Sans KR'", "sans-serif"],
                 display: ["Fredoka", "Noto Sans KR", "sans-serif"],
-                sans: ["Noto Sans KR", "sans-serif"],
             },
             borderRadius: {
                 DEFAULT: "1rem",
@@ -33,19 +37,25 @@ module.exports = {
                 '2xl': '2rem',
             },
             boxShadow: {
-                'retro': '0 4px 0 0 rgba(0,0,0,0.2)',
-                'retro-inner': 'inset 0 4px 0 0 rgba(255,255,255,0.4)',
-                'btn-orange': '0 4px 0 0 #C2410C, inset 0 2px 4px rgba(255,255,255,0.5)',
-                'btn-blue': '0 4px 0 0 #1D4ED8, inset 0 2px 4px rgba(255,255,255,0.5)',
-                'game': '0 4px 0 0 rgba(0, 0, 0, 0.2)',
-                'game-inset': 'inset 0 4px 6px rgba(0, 0, 0, 0.15)',
-                'game-highlight': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.4)',
-                'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
-                'glow': '0 0 15px rgba(14, 165, 233, 0.3)',
+                'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+                'neon': '0 0 20px rgba(79, 70, 229, 0.5)',
+                'neon-green': '0 0 15px rgba(204, 255, 164, 0.6)',
+                'card-float': '0 20px 40px -5px rgba(0, 0, 0, 0.1)',
+                'retro': '0 4px 0 0 rgba(0,0,0,0.2)', // Kept from original
+                'retro-inner': 'inset 0 4px 0 0 rgba(255,255,255,0.4)', // Kept from original
+                'btn-orange': '0 4px 0 0 #C2410C, inset 0 2px 4px rgba(255,255,255,0.5)', // Kept from original
+                'btn-blue': '0 4px 0 0 #1D4ED8, inset 0 2px 4px rgba(255,255,255,0.5)', // Kept from original
+                'game': '0 4px 0 0 rgba(0, 0, 0, 0.2)', // Kept from original
+                'game-inset': 'inset 0 4px 6px rgba(0, 0, 0, 0.15)', // Kept from original
+                'game-highlight': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.4)', // Kept from original
+                'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)', // Kept from original
+                'glow': '0 0 15px rgba(14, 165, 233, 0.3)', // Kept from original
             },
             backgroundImage: {
-                'glass-gradient': 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-                'button-shine': 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 100%)',
+                'mesh': 'radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%)',
+                'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%)',
+                'card-gradient-1': 'linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)',
+                'button-shine': 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 100%)', // Kept from original
             }
         },
     },

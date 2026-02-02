@@ -1,7 +1,6 @@
 // client/src/components/ForgotPassword.js
 
 import React, { useState } from 'react';
-import '../styles/ForgotPassword.css';
 
 function ForgotPassword({ onBackToLogin }) {
     const [email, setEmail] = useState('');
@@ -49,36 +48,56 @@ function ForgotPassword({ onBackToLogin }) {
     };
 
     return (
-        <div className="forgot-password-container">
-            <div className="forgot-password-card">
-                <div className="logo-section">
-                    <div className="logo">🔑</div>
-                    <h1 className="app-title">비밀번호 찾기</h1>
-                    <p className="subtitle">가입하신 이메일을 입력해주세요</p>
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white text-slate-900 font-sans antialiased">
+            <main className="w-full max-w-[360px] relative z-10 flex flex-col items-center">
+                <div className="mb-10 relative flex justify-center">
+                    <img
+                        alt="3D Gold Key Icon"
+                        className="w-24 h-24 object-contain"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA68yai1bZxqWD2y00dQxBQZq_zicOMInc5DYChmwBKPlACF55NPNBN_d5GVSsi_4cMM2Ptuq8qVuGoen_VmIu08cokeSkyEsId5MI_9SxVDTB4UisRaums96xfY-5BGmT84Z_f68juQCLsrFvfYVuwWaAxFczTgtpYUTIBv5Yqb_ScRDjnBAm-FGnNEfi3_5lWyQlmKDzEHBWANs0N5s3CMAsd79odNNjBz8vgbqeGSpZ86HdzxsBXvp_ui-z9W-t0XIGAsdy6YuLU"
+                        style={{ filter: 'drop-shadow(0 15px 25px rgba(0, 0, 0, 0.08))' }}
+                    />
+                </div>
+                <div className="text-center w-full mb-12 space-y-3">
+                    <h1 className="text-2xl font-bold text-black tracking-tight leading-tight">
+                        비밀번호 찾기
+                    </h1>
+                    <p className="text-slate-600 text-sm font-medium tracking-wide">
+                        가입하신 이메일을 입력해주세요
+                    </p>
                 </div>
 
-                {message && (
-                    <div className="success-message" style={{ whiteSpace: 'pre-line' }}>
+                {message ? (
+                    <div className="w-full p-4 bg-blue-50 text-blue-800 rounded-xl text-sm font-medium whitespace-pre-line leading-relaxed border border-blue-100 mb-6">
                         {message}
                     </div>
-                )}
+                ) : (
+                    <form onSubmit={handleSubmit} className="w-full space-y-6">
+                        <div className="group">
+                            <label className="sr-only" htmlFor="email">이메일 주소</label>
+                            <div className="relative">
+                                <input
+                                    className="w-full px-5 py-4 rounded-xl border border-gray-200 bg-white text-slate-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors duration-200 text-base"
+                                    id="email"
+                                    name="email"
+                                    placeholder="이메일 주소"
+                                    required
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                {!message && (
-                    <form onSubmit={handleSubmit} className="forgot-password-form">
-                        <input
-                            type="email"
-                            placeholder="이메일 주소"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="input-field"
-                            required
-                        />
-
-                        {error && <div className="error-message">{error}</div>}
+                        {error && (
+                            <div className="text-red-500 text-sm text-center font-medium bg-red-50 py-2 rounded-xl">
+                                {error}
+                            </div>
+                        )}
 
                         <button
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-base py-4 rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 active:scale-[0.98] transition-all duration-300 ease-out disabled:opacity-70 disabled:cursor-not-allowed"
                             type="submit"
-                            className="submit-button"
                             disabled={loading}
                         >
                             {loading ? '전송 중...' : '재설정 링크 받기'}
@@ -86,15 +105,19 @@ function ForgotPassword({ onBackToLogin }) {
                     </form>
                 )}
 
-                <div className="footer-links">
-                    <a href="#" onClick={(e) => {
-                        e.preventDefault();
-                        onBackToLogin();
-                    }}>
-                        ← 로그인으로 돌아가기
+                <div className="mt-10 w-full text-center">
+                    <a
+                        className="inline-flex items-center justify-center text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors duration-200 group py-2 px-4 cursor-pointer"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onBackToLogin();
+                        }}
+                    >
+                        <span className="material-icons-round text-lg mr-1.5 text-slate-500 group-hover:text-slate-800 group-hover:-translate-x-1 transition-all duration-200">arrow_back</span>
+                        로그인으로 돌아가기
                     </a>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }
