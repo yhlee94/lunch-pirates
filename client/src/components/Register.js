@@ -149,16 +149,13 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
             <main className="w-full max-w-md mx-auto relative z-10">
                 <div className="flex flex-col items-center mb-6">
-                    <div className="relative w-32 h-32 mb-4">
+                    <div className="relative w-full h-64 mb-6">
                         <img
-                            alt="Otter Mascot"
-                            className="w-full h-full object-cover rounded-full shadow-lg border-4 border-white z-10 relative transform hover:scale-105 transition-transform duration-300"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsepEt48BYXVwcDOWveEy7FeZWKHgW8dsWYInS3NMBxfu4m-CwFOvfkyJi9BOFSBX3jAoBX5IqZ4vdPL_cMyFJ4RUpWXHYEIHWt3Aapwd2EjtvBVK3E1Y2C0XHvGqHDF5Id4OzJJfPpaNfblvUfV7sDN9d2f7rIlJlrZHWnB1JYHDk03-U-y2Q8tu2oZNke4uCCCyoCd6XfNkXajZhnl4yp3UxGp0_XNuLw2ZErcEiLLIkJH1PDiKQnadaFtU3UEyASSJ_Oeq0YGw"
+                            alt="Register Mascot"
+                            className="w-full h-full object-cover rounded-3xl shadow-xl border-4 border-white z-10 relative"
+                            src="/assets/Common/register.png"
                         />
-                        <div className="absolute inset-0 bg-primary opacity-20 blur-xl rounded-full scale-125"></div>
-                        <div className="absolute -top-2 -right-2 bg-white p-1.5 rounded-full shadow-md z-20">
-                            <span className="material-icons-round text-primary text-xl">smart_toy</span>
-                        </div>
+
                     </div>
                     <h1 className="text-3xl font-black text-center text-primary mb-1 tracking-tight">
                         점심 해적단 가입
@@ -276,7 +273,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
                             <div className="pt-4">
                                 <button
-                                    className="w-full bg-gradient-to-r from-primary to-[#7C7DFF] hover:to-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/40 transform transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md text-lg flex items-center justify-center gap-2"
+                                    className="w-full bg-primary hover:bg-opacity-90 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/40 transform transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-md text-lg flex items-center justify-center gap-2"
                                     type="submit"
                                     disabled={loading}
                                 >
@@ -290,7 +287,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
                 <div className="mt-8 text-center">
                     <a
-                        className="inline-flex items-center gap-1.5 text-primary font-bold text-sm hover:underline decoration-2 underline-offset-4 transition-all opacity-90 hover:opacity-100 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-900 transition-colors duration-200 font-medium text-sm cursor-pointer"
                         onClick={(e) => {
                             e.preventDefault();
                             onBackToLogin();

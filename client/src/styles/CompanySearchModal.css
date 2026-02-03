@@ -17,6 +17,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -39,6 +40,7 @@
         transform: translateY(50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -97,12 +99,12 @@
 
 .search-input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #2563EB;
 }
 
 .search-button {
     padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #2563EB;
     color: white;
     border: none;
     border-radius: 8px;
@@ -115,7 +117,7 @@
 
 .search-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .search-button:disabled {
@@ -170,7 +172,7 @@
 }
 
 .result-item:hover {
-    border-color: #667eea;
+    border-color: #2563EB;
     background-color: #f8f9ff;
     transform: translateX(4px);
 }

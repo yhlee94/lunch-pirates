@@ -50,15 +50,14 @@ function ForgotPassword({ onBackToLogin }) {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white text-slate-900 font-sans antialiased">
             <main className="w-full max-w-[360px] relative z-10 flex flex-col items-center">
-                <div className="mb-10 relative flex justify-center">
+                <div className="-mb-8 relative flex justify-center">
                     <img
                         alt="3D Gold Key Icon"
-                        className="w-24 h-24 object-contain"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA68yai1bZxqWD2y00dQxBQZq_zicOMInc5DYChmwBKPlACF55NPNBN_d5GVSsi_4cMM2Ptuq8qVuGoen_VmIu08cokeSkyEsId5MI_9SxVDTB4UisRaums96xfY-5BGmT84Z_f68juQCLsrFvfYVuwWaAxFczTgtpYUTIBv5Yqb_ScRDjnBAm-FGnNEfi3_5lWyQlmKDzEHBWANs0N5s3CMAsd79odNNjBz8vgbqeGSpZ86HdzxsBXvp_ui-z9W-t0XIGAsdy6YuLU"
-                        style={{ filter: 'drop-shadow(0 15px 25px rgba(0, 0, 0, 0.08))' }}
+                        className="w-[450px] h-[450px] object-contain max-w-none"
+                        src="/assets/Common/password.png"
                     />
                 </div>
-                <div className="text-center w-full mb-12 space-y-3">
+                <div className="text-center w-full mb-8 space-y-3">
                     <h1 className="text-2xl font-bold text-black tracking-tight leading-tight">
                         비밀번호 찾기
                     </h1>

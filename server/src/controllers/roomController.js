@@ -159,31 +159,88 @@ exports.getRooms = async (req, res) => {
     }
 };
 
-// 이미 지난 방들 정리 (deleted_yn = 'Y')
+// 이미 지난 방들 정리
 exports.cleanupOldRooms = async () => {
+    const client = await pool.connect(); // 트랜잭션을 위해 클라이언트 연결 필요
     try {
-        // 기간 만료된 방을 정리하면서, 해당 방의 모든 참가자들도 '출항 성공(sailed)' 처리
-        const result = await pool.query(
-            `WITH expired_rooms AS (
-                UPDATE lunch_rooms
-                SET deleted_yn = 'Y', status = 'finished'
-                WHERE departure_time < (NOW() AT TIME ZONE 'Asia/Seoul')
-                  AND deleted_yn = 'N'
-                RETURNING id
-            )
-            UPDATE participants
-            SET left_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
-                exit_type = 'sailed'
-            WHERE room_id IN (SELECT id FROM expired_rooms)
-              AND left_at IS NULL
-            RETURNING room_id`
+        await client.query('BEGIN');
+
+        // 1. 기간 만료된 방들과 현재 인원수 조회
+        const expiredRoomsResult = await client.query(
+            `SELECT lr.id, COUNT(p.id) as current_participants
+             FROM lunch_rooms lr
+             LEFT JOIN participants p ON lr.id = p.room_id AND p.left_at IS NULL
+             WHERE lr.departure_time < (NOW() AT TIME ZONE 'Asia/Seoul')
+               AND lr.deleted_yn = 'N'
+             GROUP BY lr.id`
         );
 
-        if (result.rowCount > 0) {
-            console.log(`🧹 기간 만료된 방 정리 및 참가자 퇴장 처리 완료 (${result.rowCount}개 항목)`);
+        if (expiredRoomsResult.rows.length === 0) {
+            await client.query('COMMIT');
+            return;
         }
+
+        const expiredRooms = expiredRoomsResult.rows;
+
+        // 2. 방 상태 업데이트 (인원수에 따라 분기 처리)
+        // 2명 이상: departed (출항)
+        const sailedRoomIds = expiredRooms
+            .filter(r => parseInt(r.current_participants) >= 2)
+            .map(r => r.id);
+
+        // 2명 미만(1명): finished (취소/폭파)
+        const failedRoomIds = expiredRooms
+            .filter(r => parseInt(r.current_participants) < 2)
+            .map(r => r.id);
+
+        // [CASE 1] 출항 성공 (2명 이상)
+        if (sailedRoomIds.length > 0) {
+            // 방 상태 변경: departed, 삭제 처리
+            await client.query(
+                `UPDATE lunch_rooms
+                 SET status = 'departed', deleted_yn = 'Y', updated_at = NOW()
+                 WHERE id = ANY($1)`,
+                [sailedRoomIds]
+            );
+
+            // 참가자 상태 변경: sailed (출항함)
+            await client.query(
+                `UPDATE participants
+                 SET left_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
+                     exit_type = 'sailed'
+                 WHERE room_id = ANY($1) AND left_at IS NULL`,
+                [sailedRoomIds]
+            );
+        }
+
+        // [CASE 2] 출항 실패 (1명)
+        if (failedRoomIds.length > 0) {
+            // 방 상태 변경: finished, 삭제 처리
+            await client.query(
+                `UPDATE lunch_rooms
+                 SET status = 'finished', deleted_yn = 'Y', updated_at = NOW()
+                 WHERE id = ANY($1)`,
+                [failedRoomIds]
+            );
+
+            // 참가자 상태 변경: cancel (취소됨) - 혹은 failed 등 적절한 상태값
+            await client.query(
+                `UPDATE participants
+                 SET left_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
+                     exit_type = 'cancel'
+                 WHERE room_id = ANY($1) AND left_at IS NULL`,
+                [failedRoomIds]
+            );
+        }
+
+        await client.query('COMMIT');
+        console.log(`🧹 방 정리 완료: 출항 ${sailedRoomIds.length}건, 취소 ${failedRoomIds.length}건`);
+
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('방 자동 정리 중 에러:', error);
+    } finally {
+        client.release();
     }
 };
 

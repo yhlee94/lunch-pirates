@@ -54,7 +54,10 @@ function CompanySearchModal({ onSelectCompany, onClose }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>🏢 회사 검색</h2>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="material-icons-round" style={{ color: '#94a3b8' }}>business</span>
+                        회사 검색
+                    </h2>
                     <button className="close-button" onClick={onClose}>✕</button>
                 </div>
 
@@ -73,7 +76,12 @@ function CompanySearchModal({ onSelectCompany, onClose }) {
                         className="search-button"
                         disabled={loading}
                     >
-                        {loading ? '검색 중...' : '🔍 검색'}
+                        {loading ? '검색 중...' : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span className="material-icons-round" style={{ fontSize: '18px' }}>search</span>
+                                검색
+                            </div>
+                        )}
                     </button>
                 </div>
 
@@ -104,15 +112,18 @@ function CompanySearchModal({ onSelectCompany, onClose }) {
                                     className="result-item"
                                     onClick={() => handleSelect(company)}
                                 >
-                                    <div className="company-name">
-                                        🏢 {company.place_name}
+                                    <div className="company-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span className="material-icons-round" style={{ fontSize: '18px', color: '#94a3b8' }}>business</span>
+                                        {company.place_name}
                                     </div>
-                                    <div className="company-address">
-                                        📍 {company.address_name || company.road_address_name}
+                                    <div className="company-address" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span className="material-icons-round" style={{ fontSize: '16px', color: '#94a3b8' }}>place</span>
+                                        {company.address_name || company.road_address_name}
                                     </div>
                                     {company.phone && (
-                                        <div className="company-phone">
-                                            📞 {company.phone}
+                                        <div className="company-phone" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span className="material-icons-round" style={{ fontSize: '14px', color: '#94a3b8' }}>call</span>
+                                            {company.phone}
                                         </div>
                                     )}
                                 </div>
@@ -122,8 +133,9 @@ function CompanySearchModal({ onSelectCompany, onClose }) {
                 </div>
 
                 <div className="modal-footer">
-                    <p className="hint-text">
-                        💡 검색 후 원하는 회사를 클릭해주세요
+                    <p className="hint-text" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <span className="material-icons-round" style={{ fontSize: '16px', color: '#94a3b8' }}>lightbulb</span>
+                        검색 후 원하는 회사를 클릭해주세요
                     </p>
                 </div>
             </div>

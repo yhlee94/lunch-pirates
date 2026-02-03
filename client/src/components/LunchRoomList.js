@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import CreateRoomModal from './CreateRoomModal';
+// import CreateRoomModal from './CreateRoomModal';
 import RoomCard from './RoomCard';
 import RoomDetailModal from './RoomDetailModal';
 
 
 function LunchRoomList({ user, onNavigateToMyRoom }) {
+    const navigate = useNavigate();
     const [rooms, setRooms] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    // const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [randomImageIndex] = useState(() => Math.floor(Math.random() * 5) + 1);
     const roomsPerPage = 6;
+
+    const scrollRef = useRef(null);
 
     // 방 목록 불러오기
     const fetchRooms = async () => {
@@ -54,10 +58,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
         fetchRooms();
     }, []);
 
-    const handleRoomCreated = () => {
-        setShowCreateModal(false);
-        fetchRooms();
-    };
+
 
     // 페이징 관련 계산
     const totalPages = Math.ceil(rooms.length / roomsPerPage) || 1;
@@ -101,21 +102,20 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-3 gap-3 mb-8 shrink-0">
+                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm relative active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                        <span className="material-symbols-rounded text-yellow-500 text-2xl">trophy</span>
+                        <span className="text-xs font-bold text-slate-600">맛집 랭킹</span>
+                    </button>
+                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                        <span className="material-symbols-rounded text-rose-400 text-2xl">local_activity</span>
+                        <span className="text-xs font-bold text-slate-600">티켓</span>
+                    </button>
                     <button
                         onClick={onNavigateToMyRoom}
                         className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80"
                     >
                         <span className="material-symbols-rounded text-primary text-2xl">account_circle</span>
                         <span className="text-xs font-bold text-slate-600">마이룸</span>
-                    </button>
-                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm relative active:scale-95 transition-transform duration-200 hover:bg-white/80">
-                        <div className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
-                        <span className="material-symbols-rounded text-slate-800 text-2xl">notifications</span>
-                        <span className="text-xs font-bold text-slate-600">알림</span>
-                    </button>
-                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80">
-                        <span className="material-symbols-rounded text-accent-orange text-2xl">savings</span>
-                        <span className="text-xs font-bold text-slate-600 mt-1">140 P</span>
                     </button>
                 </div>
 
@@ -126,7 +126,10 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                         <span className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors cursor-pointer">전체보기</span>
                     </div>
 
-                    <div className="overflow-x-auto hide-scrollbar pb-6 -mx-6 px-6 flex items-center space-x-5 h-full">
+                    <div
+                        ref={scrollRef}
+                        className="overflow-x-auto hide-scrollbar pb-6 -mx-6 px-6 flex items-center space-x-5 h-full"
+                    >
                         {loading ? (
                             <div className="w-full flex justify-center items-center">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -137,21 +140,28 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                             </div>
                         ) : (
                             rooms.map(room => (
-                                <RoomCard
+                                <div
                                     key={room.id}
-                                    room={room}
-                                    onJoin={() => setSelectedRoom(room)}
-                                />
+                                    className="pointer-events-auto shrink-0 w-[75%] h-[90%]"
+                                    onClick={(e) => {
+                                        e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                                    }}
+                                >
+                                    <RoomCard
+                                        room={room}
+                                        onJoin={() => setSelectedRoom(room)}
+                                    />
+                                </div>
                             ))
                         )}
-                        <div className="w-2"></div>
+                        <div className="w-2 shrink-0"></div>
                     </div>
                 </div>
 
                 {/* Create Room Button (Bottom) */}
                 <div className="mt-4 shrink-0 relative">
                     <button
-                        onClick={() => setShowCreateModal(true)}
+                        onClick={() => navigate('/create-room')}
                         className="w-full relative group overflow-hidden rounded-[2rem] p-0 transition-all duration-300 active:scale-[0.98]"
                     >
                         <div className="absolute inset-0 bg-primary/90 backdrop-blur-xl z-0"></div>
@@ -160,8 +170,8 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                         <div className="absolute -inset-[2px] rounded-[2.1rem] bg-gradient-to-r from-accent-green via-primary to-accent-orange opacity-50 blur-sm z-[-1] animate-pulse"></div>
                         <div className="relative z-10 flex items-center justify-between p-1 pl-8 pr-2 h-20">
                             <div className="flex flex-col items-start text-left">
-                                <span className="text-accent-green text-[10px] font-black uppercase tracking-widest mb-1">New Event</span>
-                                <span className="text-white text-xl font-bold tracking-tight">모임 만들기</span>
+                                <span className="text-accent-green text-[10px] font-black uppercase tracking-widest mb-1">NEW SHIP</span>
+                                <span className="text-white text-xl font-bold tracking-tight">해적선 만들기</span>
                             </div>
                             <div className="h-16 w-16 bg-white/20 rounded-[1.6rem] flex items-center justify-center border border-white/30 shadow-lg group-hover:bg-white/30 transition-colors backdrop-blur-md">
                                 <span className="material-symbols-rounded text-white text-4xl group-hover:rotate-90 transition-transform duration-500">add</span>
@@ -172,14 +182,14 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                 </div>
             </div>
 
-            {/* Create Room Modal */}
-            {showCreateModal && (
+            {/* Create Room Modal - Removed */}
+            {/* {showCreateModal && (
                 <CreateRoomModal
                     user={user}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={handleRoomCreated}
                 />
-            )}
+            )} */}
 
             {/* Room Detail Modal */}
             {selectedRoom && (

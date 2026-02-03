@@ -7,7 +7,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                primary: "#4F46E5", // Modern Indigo
+                primary: "#2563EB", // Project Blue
                 "primary-bright": "#6366F1",
                 "accent-green": "#CCFFA4", // Acid Green
                 "accent-orange": "#FF9F43",
