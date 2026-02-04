@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// import CreateRoomModal from './CreateRoomModal';
 import RoomCard from './RoomCard';
-import RoomDetailModal from './RoomDetailModal';
 
 
 function LunchRoomList({ user, onNavigateToMyRoom }) {
@@ -149,7 +147,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                                 >
                                     <RoomCard
                                         room={room}
-                                        onJoin={() => setSelectedRoom(room)}
+                                        onJoin={() => navigate(`/room/${room.id}`, { state: { room } })}
                                     />
                                 </div>
                             ))
@@ -181,25 +179,6 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                     </button>
                 </div>
             </div>
-
-            {/* Create Room Modal - Removed */}
-            {/* {showCreateModal && (
-                <CreateRoomModal
-                    user={user}
-                    onClose={() => setShowCreateModal(false)}
-                    onSuccess={handleRoomCreated}
-                />
-            )} */}
-
-            {/* Room Detail Modal */}
-            {selectedRoom && (
-                <RoomDetailModal
-                    user={user}
-                    room={selectedRoom}
-                    onClose={() => setSelectedRoom(null)}
-                    onSuccess={fetchRooms}
-                />
-            )}
         </div>
     );
 

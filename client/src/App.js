@@ -8,6 +8,7 @@ import ResetPassword from './components/ResetPassword';
 import EmailVerification from './components/EmailVerification';
 import Main from './components/Main';
 import CreateRoom from './components/CreateRoom';
+import RoomLobby from './components/RoomLobby';
 import './App.css';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 
           {/* 방 만들기 페이지 (라우터 추가) */}
           <Route path="/create-room" element={<CreateRoom user={user} />} />
+          <Route path="/room/:roomId" element={<RoomLobby user={user} />} />
 
           {/* 기본 화면들 (라우터 불필요, 기존 방식 유지) */}
           <Route path="*" element={

@@ -264,6 +264,10 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                                     required
                                 />
                             </div>
+                            <p className="text-xs text-slate-400 pl-4 mt-1 flex items-center gap-1">
+                                <span className="material-icons-round text-xs">security</span>
+                                비밀번호는 암호화되어 안전하게 저장됩니다.
+                            </p>
 
                             {error && (
                                 <div className="text-red-500 text-sm text-center font-medium bg-red-50 py-2 rounded-xl">
