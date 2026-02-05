@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function MyRoom({ user, onBack }) {
+    const navigate = useNavigate();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -255,17 +257,20 @@ function MyRoom({ user, onBack }) {
 
             <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-[#1e293b] dark:bg-slate-800 text-white rounded-full p-2 shadow-2xl flex items-center justify-around z-50 backdrop-blur-lg bg-opacity-90 border border-slate-700 max-w-[400px]">
                 <button
-                    onClick={onBack}
+                    onClick={() => navigate('/')}
                     className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
                     <span className="material-icons-round">home</span>
                 </button>
+                <button
+                    onClick={() => navigate('/rankings')}
+                    className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                    <span className="material-icons-round">emoji_events</span>
+                </button>
                 <button className="p-3 rounded-full text-primary bg-white/10 relative">
                     <span className="material-icons-round">face</span>
                     <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-slate-800"></span>
-                </button>
-                <button className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                    <span className="material-icons-round">shopping_bag</span>
                 </button>
                 <button className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
                     <span className="material-icons-round">settings</span>

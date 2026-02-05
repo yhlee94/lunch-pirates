@@ -9,6 +9,8 @@ import EmailVerification from './components/EmailVerification';
 import Main from './components/Main';
 import CreateRoom from './components/CreateRoom';
 import RoomLobby from './components/RoomLobby';
+import RankingPage from './components/RankingPage';
+import MyRoom from './components/MyRoom';
 import './App.css';
 
 function App() {
@@ -41,9 +43,11 @@ function App() {
           {/* 비밀번호 재설정 (라우터 필요) */}
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* 방 만들기 페이지 (라우터 추가) */}
+          {/* 방 만들기 페이지 */}
           <Route path="/create-room" element={<CreateRoom user={user} />} />
           <Route path="/room/:roomId" element={<RoomLobby user={user} />} />
+          <Route path="/rankings" element={<RankingPage user={user} />} />
+          <Route path="/my-room" element={<MyRoom user={user} onBack={() => window.history.back()} />} />
 
           {/* 기본 화면들 (라우터 불필요, 기존 방식 유지) */}
           <Route path="*" element={

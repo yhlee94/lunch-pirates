@@ -100,7 +100,10 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-3 gap-3 mb-8 shrink-0">
-                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm relative active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                    <button
+                        onClick={() => navigate('/rankings')}
+                        className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm relative active:scale-95 transition-transform duration-200 hover:bg-white/80"
+                    >
                         <span className="material-symbols-rounded text-yellow-500 text-2xl">trophy</span>
                         <span className="text-xs font-bold text-slate-600">맛집 랭킹</span>
                     </button>
@@ -109,7 +112,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                         <span className="text-xs font-bold text-slate-600">티켓</span>
                     </button>
                     <button
-                        onClick={onNavigateToMyRoom}
+                        onClick={() => navigate('/my-room')}
                         className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80"
                     >
                         <span className="material-symbols-rounded text-primary text-2xl">account_circle</span>
@@ -169,7 +172,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                         <div className="relative z-10 flex items-center justify-between p-1 pl-8 pr-2 h-20">
                             <div className="flex flex-col items-start text-left">
                                 <span className="text-accent-green text-[10px] font-black uppercase tracking-widest mb-1">NEW SHIP</span>
-                                <span className="text-white text-xl font-bold tracking-tight">해적선 만들기</span>
+                                <span className="text-white text-xl font-bold tracking-tight">해적선 생성</span>
                             </div>
                             <div className="h-16 w-16 bg-white/20 rounded-[1.6rem] flex items-center justify-center border border-white/30 shadow-lg group-hover:bg-white/30 transition-colors backdrop-blur-md">
                                 <span className="material-symbols-rounded text-white text-4xl group-hover:rotate-90 transition-transform duration-500">add</span>

@@ -243,7 +243,7 @@ function CreateRoom({ user }) {
                 >
                     <span className="material-symbols-rounded text-[24px]">arrow_back_ios_new</span>
                 </button>
-                <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-8">모임 만들기</h2>
+                <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-8">해적선 생성</h2>
             </div>
 
             <div className="relative z-0 flex h-screen w-full flex-col bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden" style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', zIndex: -1 }}></div>
@@ -325,14 +325,18 @@ function CreateRoom({ user }) {
                                         ? 'bg-white shadow-glow border-2 border-[#2b8cee] scale-[1.02]'
                                         : 'bg-white shadow-soft border-slate-100 opacity-70 hover:opacity-100 active:scale-95'}`}
                                 >
-                                    {selectedPlace?.id === place.id && (
-                                        <div className="absolute top-4 right-4 text-[#2b8cee]">
-                                            <span className="material-symbols-outlined filled text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                                        </div>
-                                    )}
-                                    <div>
-                                        <h4 className="text-slate-900 text-[16px] font-bold leading-tight mb-1 line-clamp-2">{place.place_name}</h4>
-                                        <p className="text-slate-400 text-[11px] font-medium leading-normal line-clamp-1">{place.category_name.split('>').pop()}</p>
+                                    <div className="flex-1 w-full flex items-center justify-center mb-1">
+                                        {selectedPlace?.id === place.id ? (
+                                            <span className="material-symbols-outlined filled text-[48px] text-[#2b8cee] animate-bounce" style={{ fontVariationSettings: "'FILL' 1" }}>sailing</span>
+                                        ) : (
+                                            <div className="size-12 rounded-full bg-slate-50 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-slate-300 text-[24px]">restaurant</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="w-full text-center">
+                                        <h4 className="text-slate-900 text-[14px] font-bold leading-tight mb-1 whitespace-nowrap overflow-hidden text-ellipsis">{place.place_name}</h4>
+                                        <p className="text-slate-400 text-[11px] font-medium leading-normal line-clamp-1 text-center">{place.category_name.split('>').pop()}</p>
                                     </div>
                                 </div>
                             ))}
@@ -412,7 +416,7 @@ function CreateRoom({ user }) {
                     disabled={isSubmitting || !selectedPlace}
                     className="w-full h-14 bg-[#2b8cee] rounded-[1.5rem] text-white font-bold text-lg shadow-glow flex items-center justify-center gap-2 transition-transform active:scale-[0.98] hover:shadow-lg hover:shadow-[#2b8cee]/30 disabled:opacity-50 disabled:grayscale"
                 >
-                    <span>{isSubmitting ? '생성 중...' : '모임 개설하기'}</span>
+                    <span>{isSubmitting ? '생성 중...' : '해적선 생성'}</span>
                 </button>
             </div>
 
