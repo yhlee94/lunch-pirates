@@ -15,13 +15,17 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "http://localhost:3000",
+        // 배포된 Electron 앱이나 웹에서 접근 가능하도록 설정
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*', // 모든 출처 허용 (보안이 중요하다면 추후 특정 도메인으로 제한 필요)
+    credentials: true
+}));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/company', companyRoutes);

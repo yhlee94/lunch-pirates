@@ -1,6 +1,7 @@
 // client/src/components/CompanySearchModal.js
 import React, { useState } from 'react';
 import '../styles/CompanySearchModal.css';
+import API_BASE_URL from '../apiConfig';
 
 function CompanySearchModal({ onSelectCompany, onClose }) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -20,7 +21,7 @@ function CompanySearchModal({ onSelectCompany, onClose }) {
         setSearched(true);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/company/search?query=${encodeURIComponent(searchQuery)}`);
+            const response = await fetch(`${API_BASE_URL}/api/company/search?query=${encodeURIComponent(searchQuery)}`);
             const data = await response.json();
 
             if (response.ok) {

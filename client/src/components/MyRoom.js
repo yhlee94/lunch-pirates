@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../apiConfig';
 
 function MyRoom({ user, onBack }) {
     const navigate = useNavigate();
@@ -27,7 +28,7 @@ function MyRoom({ user, onBack }) {
     const fetchItems = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/users/items', {
+            const response = await axios.get(`${API_BASE_URL}/api/users/items`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -61,7 +62,7 @@ function MyRoom({ user, onBack }) {
         try {
             setEquipping(true);
             const token = localStorage.getItem('token');
-            const response = await axios.post('http://localhost:5000/api/users/equip', { itemId }, {
+            const response = await axios.post(`${API_BASE_URL}/api/users/equip`, { itemId }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
