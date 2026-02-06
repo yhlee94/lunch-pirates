@@ -82,7 +82,7 @@ function ResetPassword() {
                     <img
                         alt="Password Reset Icon"
                         className="w-[600px] h-[600px] object-contain max-w-none"
-                        src="/assets/Common/reset.png"
+                        src={process.env.PUBLIC_URL + "/assets/Common/reset.png"}
                     />
                 </div>
 

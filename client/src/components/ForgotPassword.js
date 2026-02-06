@@ -55,7 +55,7 @@ function ForgotPassword({ onBackToLogin }) {
                     <img
                         alt="3D Gold Key Icon"
                         className="w-[450px] h-[450px] object-contain max-w-none"
-                        src="/assets/Common/password.png"
+                        src={process.env.PUBLIC_URL + "/assets/Common/password.png"}
                     />
                 </div>
                 <div className="text-center w-full mb-8 space-y-3">
