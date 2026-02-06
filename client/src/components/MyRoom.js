@@ -159,7 +159,7 @@ function MyRoom({ user, onBack }) {
                                             key={selectedItem.image_url} // Add key to force proper re-render without glitch if needed, or remove if causing it. Let's try removing smooth transition.
                                             alt={selectedItem.name}
                                             className="w-full h-full object-contain rounded-3xl drop-shadow-xl mask-image-gradient"
-                                            src={selectedItem.image_url}
+                                            src={`${process.env.PUBLIC_URL}${selectedItem.image_url}`}
                                         />
                                         <div className="absolute top-0 right-0 w-3 h-3 bg-blue-400 rounded-full blur-[2px] opacity-60 animate-bounce"></div>
                                         <div className="absolute bottom-10 left-4 w-2 h-2 bg-purple-400 rounded-full blur-[1px] opacity-50 animate-pulse"></div>
@@ -235,7 +235,7 @@ function MyRoom({ user, onBack }) {
                                         <img
                                             alt={item.name}
                                             className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 z-10`}
-                                            src={item.image_url}
+                                            src={`${process.env.PUBLIC_URL}${item.image_url}`}
                                         />
                                     </div>
 

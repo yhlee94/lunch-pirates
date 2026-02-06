@@ -148,7 +148,7 @@ function RoomLobby({ user }) {
                     100% { transform: translateX(0); }
                 }
                 .wave-bg {
-                    background: url("/assets/Common/wave.png");
+                    background: url("${process.env.PUBLIC_URL}/assets/Common/wave.png");
                     background-position: 0 bottom;
                     background-repeat: repeat-x;
                     background-size: 50% 100%;
@@ -173,7 +173,7 @@ function RoomLobby({ user }) {
                 <div className="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-[40%] w-[180%] h-[70%] z-20 pointer-events-none flex items-center justify-center">
                     <div className="relative w-full h-full animate-[sway_6s_ease-in-out_infinite]">
                         <img
-                            src="/assets/Common/ship.png"
+                            src={process.env.PUBLIC_URL + "/assets/Common/ship.png"}
                             alt="Pirate Ship"
                             className="w-full h-full object-contain drop-shadow-[0_30px_50px_rgba(0,0,0,0.4)]"
                         />

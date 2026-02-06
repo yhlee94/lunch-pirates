@@ -94,7 +94,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                             </div>
                         </div>
                         <div className="absolute -right-2 top-[23%] -translate-y-1/2 w-56 h-56 animate-float z-0">
-                            <img alt="3D Food" className="w-full h-full object-contain drop-shadow-2xl opacity-90" src={`/assets/RoomList/${randomImageIndex}.png`} style={{ transform: 'scale(1.2)' }} />
+                            <img alt="3D Food" className="w-full h-full object-contain drop-shadow-2xl opacity-90" src={process.env.PUBLIC_URL + `/assets/RoomList/${randomImageIndex}.png`} style={{ transform: 'scale(1.2)' }} />
                         </div>
                     </div>
                 </div>

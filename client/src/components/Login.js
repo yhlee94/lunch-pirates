@@ -49,7 +49,7 @@ function Login({ onLoginSuccess, onShowRegister, onShowForgotPassword }) {
             <main className="relative z-10 w-full max-w-[420px] px-8 flex flex-col items-center justify-center min-h-[100dvh]">
                 <div className="flex flex-col items-center mb-12 w-full animate-float" style={{ animationDuration: '4s' }}>
                     <div className="relative group mt-10 mb-9">
-                        <img src="/assets/RoomList/login-1.png" alt="Logo" className="w-80 h-auto object-contain drop-shadow-xl transform transition-all duration-500 hover:scale-105" />
+                        <img src={process.env.PUBLIC_URL + "/assets/RoomList/login-1.png"} alt="Logo" className="w-80 h-auto object-contain drop-shadow-xl transform transition-all duration-500 hover:scale-105" />
                     </div>
                     <div className="text-center space-y-2">
                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">

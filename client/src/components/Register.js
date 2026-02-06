@@ -154,7 +154,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                         <img
                             alt="Register Mascot"
                             className="w-full h-full object-cover rounded-3xl shadow-xl border-4 border-white z-10 relative"
-                            src="/assets/Common/register.png"
+                            src={process.env.PUBLIC_URL + "/assets/Common/register.png"}
                         />
 
                     </div>
