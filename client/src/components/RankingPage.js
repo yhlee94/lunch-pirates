@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../apiConfig';
 
 function RankingPage({ user }) {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ function RankingPage({ user }) {
 
         const fetchRankings = async () => {
             try {
-                const url = `http://localhost:5000/api/company/rankings/${user.company_id}`;
+                const url = `${API_BASE_URL}/api/company/rankings/${user.company_id}`;
                 console.log("Fetching rankings from:", url);
 
                 const response = await axios.get(url);

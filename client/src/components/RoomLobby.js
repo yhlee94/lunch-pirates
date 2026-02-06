@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from '../apiConfig';
 
 function RoomLobby({ user }) {
     const { roomId } = useParams();
@@ -15,7 +16,7 @@ function RoomLobby({ user }) {
         try {
             if (!silent && !room) setLoading(true);
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/rooms', {
+            const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -47,7 +48,7 @@ function RoomLobby({ user }) {
         try {
             setIsSubmitting(true);
             const token = localStorage.getItem('token');
-            const response = await axios.post(`http://localhost:5000/api/rooms/${room.id}/join`, {}, {
+            const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/join`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -64,7 +65,7 @@ function RoomLobby({ user }) {
         try {
             setIsSubmitting(true);
             const token = localStorage.getItem('token');
-            const response = await axios.post(`http://localhost:5000/api/rooms/${room.id}/leave`, {}, {
+            const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/leave`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -83,7 +84,7 @@ function RoomLobby({ user }) {
         try {
             setIsSubmitting(true);
             const token = localStorage.getItem('token');
-            const response = await axios.delete(`http://localhost:5000/api/rooms/${room.id}`, {
+            const response = await axios.delete(`${API_BASE_URL}/api/rooms/${room.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {

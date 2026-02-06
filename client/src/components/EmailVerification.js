@@ -1,6 +1,7 @@
 // client/src/components/EmailVerification.js
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import API_BASE_URL from '../apiConfig';
 
 function EmailVerification() {
     const [status, setStatus] = useState('loading'); // loading, success, error
@@ -20,7 +21,7 @@ function EmailVerification() {
 
             try {
                 const response = await fetch(
-                    `http://localhost:5000/api/auth/verify-email?token=${token}`
+                    `${API_BASE_URL}/api/auth/verify-email?token=${token}`
                 );
 
                 if (response.ok) {

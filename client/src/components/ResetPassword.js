@@ -1,6 +1,7 @@
 // client/src/components/ResetPassword.js
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import API_BASE_URL from '../apiConfig';
 
 function ResetPassword() {
     const [newPassword, setNewPassword] = useState('');
@@ -45,7 +46,7 @@ function ResetPassword() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/reset-password', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

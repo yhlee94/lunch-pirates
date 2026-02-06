@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import RoomCard from './RoomCard';
+import API_BASE_URL from '../apiConfig';
 
 
 function LunchRoomList({ user, onNavigateToMyRoom }) {
@@ -22,7 +23,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/rooms', {
+            const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
