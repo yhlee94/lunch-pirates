@@ -215,7 +215,8 @@ function CreateRoom({ user }) {
                     latitude: parseFloat(selectedPlace.latitude),
                     longitude: parseFloat(selectedPlace.longitude),
                     max_participants: maxParticipants,
-                    departure_time: localDepartureTime
+                    departure_time: localDepartureTime,
+                    kakao_place_id: selectedPlace.id
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` }

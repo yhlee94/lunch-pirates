@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const userRoutes = require('./routes/userRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 
 
 
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/comments', commentRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -49,6 +51,7 @@ io.on('connection', (socket) => {
 const roomController = require('./controllers/roomController');
 
 const PORT = process.env.PORT || 5000;
+
 server.listen(PORT, () => {
     console.log(`서버 실행 중: http://localhost:${PORT}`);
 });

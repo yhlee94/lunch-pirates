@@ -5,7 +5,7 @@ exports.createRoom = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const { restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time } = req.body;
+        const { restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time, kakao_place_id } = req.body;
         const creator_id = req.user.id; // JWT에서 추출
         const company_id = req.user.company_id; // JWT에서 추출
 
@@ -29,10 +29,10 @@ exports.createRoom = async (req, res) => {
         // 방 생성
         const roomResult = await client.query(
             `INSERT INTO lunch_rooms
-             (company_id, creator_id, restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time, status, created_at, updated_at, deleted_yn)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'waiting', NOW(), NOW(), 'N')
+             (company_id, creator_id, restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time, kakao_place_id, status, created_at, updated_at, deleted_yn)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'waiting', NOW(), NOW(), 'N')
                  RETURNING *`,
-            [company_id, creator_id, restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time]
+            [company_id, creator_id, restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time, kakao_place_id]
         );
 
         const room = roomResult.rows[0];
@@ -198,7 +198,8 @@ exports.cleanupOldRooms = async () => {
             // 방 상태 변경: departed, 삭제 처리
             await client.query(
                 `UPDATE lunch_rooms
-                 SET status = 'departed', deleted_yn = 'Y', updated_at = NOW()
+                 SET status = 'departed', deleted_yn = 'Y', updated_at = NOW(),
+                     participants_count = (SELECT COUNT(*) FROM participants WHERE room_id = lunch_rooms.id AND left_at IS NULL)
                  WHERE id = ANY($1)`,
                 [sailedRoomIds]
             );
@@ -218,7 +219,8 @@ exports.cleanupOldRooms = async () => {
             // 방 상태 변경: finished, 삭제 처리
             await client.query(
                 `UPDATE lunch_rooms
-                 SET status = 'finished', deleted_yn = 'Y', updated_at = NOW()
+                 SET status = 'finished', deleted_yn = 'Y', updated_at = NOW(),
+                     participants_count = (SELECT COUNT(*) FROM participants WHERE room_id = lunch_rooms.id AND left_at IS NULL)
                  WHERE id = ANY($1)`,
                 [failedRoomIds]
             );

@@ -8,6 +8,112 @@ function RankingPage({ user }) {
     const [rankings, setRankings] = useState([]);
     const [companyName, setCompanyName] = useState('');
     const [loading, setLoading] = useState(true);
+    const [expandedRestaurantId, setExpandedRestaurantId] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editContent, setEditContent] = useState('');
+
+    // 댓글 삭제
+    const handleDeleteComment = async (commentId) => {
+        if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+        try {
+            const response = await axios.delete(`${API_BASE_URL}/api/comments/${commentId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.data.success) {
+                // UI에서 즉시 제거
+                setComments(prev => prev.filter(c => c.id !== commentId));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('댓글 삭제 권한이 없거나 오류가 발생했습니다.');
+        }
+    };
+
+    // 댓글 수정 시작
+    const handleStartEdit = (comment) => {
+        setEditingCommentId(comment.id);
+        setEditContent(comment.content);
+    };
+
+    // 댓글 수정 저장
+    const handleSaveEdit = async (commentId) => {
+        if (!editContent.trim()) return;
+        try {
+            const response = await axios.put(`${API_BASE_URL}/api/comments/${commentId}`, {
+                content: editContent
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.data.success) {
+                setComments(prev => prev.map(c => c.id === commentId ? { ...c, content: editContent } : c));
+                setEditingCommentId(null);
+                setEditContent('');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('댓글 수정 권한이 없거나 오류가 발생했습니다.');
+        }
+    };
+
+    // 댓글 조회 함수
+    const fetchComments = async (restaurantId) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/comments/${restaurantId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.data.success) {
+                setComments(response.data.comments);
+            }
+        } catch (error) {
+            console.error("Failed to fetch comments", error);
+        }
+    };
+
+    // 식당 클릭 핸들러
+    const handleExpand = (id) => {
+        if (expandedRestaurantId === id) {
+            setExpandedRestaurantId(null);
+            setComments([]);
+            setNewComment('');
+        } else {
+            setExpandedRestaurantId(id);
+            // kakao_place_id가 있는 경우에만 댓글 조회
+            if (id) {
+                fetchComments(id);
+            }
+        }
+    };
+
+    // 댓글 작성 핸들러
+    const handleSubmitComment = async (e) => {
+        e.preventDefault(); // 폼 제출 방지
+        e.stopPropagation(); // 상위 클릭 이벤트 전파 방지
+
+        if (!newComment.trim()) return;
+
+        setSubmitting(true);
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/comments`, {
+                restaurant_id: expandedRestaurantId,
+                content: newComment
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (response.data.success) {
+                setNewComment('');
+                fetchComments(expandedRestaurantId); // 목록 새로고침
+            }
+        } catch (error) {
+            alert('댓글 작성에 실패했습니다.');
+            console.error(error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     useEffect(() => {
         console.log("RankingPage User check:", user);
@@ -161,11 +267,11 @@ function RankingPage({ user }) {
                     <div className="relative z-10 flex-1 px-6 pb-32 flex flex-col gap-5">
                         {rankings.map((item, index) => {
                             const rank = index + 1;
+                            const isExpanded = expandedRestaurantId === item.kakao_place_id && item.kakao_place_id;
                             let rankStyle = "font-bold text-xl text-slate-300 italic";
                             let iconColor = "text-slate-300";
                             let borderHover = "hover:border-slate-200/50";
 
-                            // 상위 3위까지 커스텀 스타일 적용
                             if (rank === 1) {
                                 rankStyle = "font-extrabold text-3xl italic text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 drop-shadow-sm";
                                 iconColor = "text-rose-500";
@@ -181,24 +287,117 @@ function RankingPage({ user }) {
                             }
 
                             return (
-                                <div key={index} className={`group flex items-center p-6 bg-white rounded-[1.5rem] shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)] border border-slate-50 ${borderHover} transition-all duration-300 transform hover:-translate-y-1`}>
-                                    <div className="w-16 flex-shrink-0 flex items-center justify-center">
-                                        <span className={`${rankStyle} pr-1 leading-normal`}>{rank}</span>
-                                    </div>
-                                    <div className="flex-1 px-4 ml-2">
-                                        <h3 className="font-bold text-slate-900 text-lg tracking-tight line-clamp-1">{item.restaurant_name}</h3>
-                                        <p className="text-xs font-medium text-slate-400 mt-1 truncate">{item.restaurant_address || '주소 정보 없음'}</p>
-                                    </div>
-                                    <div className="flex-shrink-0 flex flex-col items-end gap-1">
-                                        <div className="flex items-center gap-1.5 text-slate-800">
-                                            <span className={`material-symbols-outlined ${iconColor} text-[20px] ${rank === 1 ? 'drop-shadow-sm' : ''}`}>
-                                                {rank <= 3 ? 'local_fire_department' : 'person'}
-                                            </span>
-                                            <span className={`font-bold ${rank <= 3 ? 'text-base' : 'text-sm text-slate-500'} tabular-nums`}>
-                                                {formatCount(item.visit_count)}
-                                            </span>
+                                <div key={index} className="flex flex-col">
+                                    <div
+                                        onClick={() => item.kakao_place_id && handleExpand(item.kakao_place_id)}
+                                        className={`group relative z-10 flex items-center p-6 bg-white rounded-[1.5rem] shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)] border border-slate-50 ${borderHover} transition-all duration-300 transform ${isExpanded ? 'scale-[1.02] ring-2 ring-[#2b8cee]/20 shadow-xl' : 'hover:-translate-y-1'} cursor-pointer`}
+                                    >
+                                        <div className="w-16 flex-shrink-0 flex items-center justify-center">
+                                            <span className={`${rankStyle} pr-1 leading-normal`}>{rank}</span>
+                                        </div>
+                                        <div className="flex-1 px-4 ml-2">
+                                            <h3 className="font-bold text-slate-900 text-lg tracking-tight line-clamp-1">{item.restaurant_name}</h3>
+                                            <p className="text-xs font-medium text-slate-400 mt-1 truncate">{item.restaurant_address || '주소 정보 없음'}</p>
+                                        </div>
+                                        <div className="flex-shrink-0 flex flex-col items-end gap-1">
+                                            <div className="flex items-center gap-1.5 text-slate-800">
+                                                <span className={`material-symbols-outlined ${iconColor} text-[20px] ${rank === 1 ? 'drop-shadow-sm' : ''}`}>
+                                                    {rank <= 3 ? 'local_fire_department' : 'person'}
+                                                </span>
+                                                <span className={`font-bold ${rank <= 3 ? 'text-base' : 'text-sm text-slate-500'} tabular-nums`}>
+                                                    {formatCount(item.visit_count)}
+                                                </span>
+                                            </div>
+                                            {item.kakao_place_id && (
+                                                <span className="text-[10px] text-slate-300 mt-1 flex items-center gap-0.5">
+                                                    <span className="material-symbols-outlined text-[12px]">chat_bubble_outline</span>
+                                                    댓글
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
+
+                                    {/* 댓글 섹션 (확장 시 표시) */}
+                                    {isExpanded && (
+                                        <div className="mx-0 bg-slate-50/80 rounded-b-[1.5rem] -mt-4 pt-6 pb-4 px-4 border-x border-b border-slate-100 animate-in slide-in-from-top-4 duration-300">
+                                            <div className="flex flex-col gap-3 mb-4 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                                                {comments.length === 0 ? (
+                                                    <p className="text-center text-slate-400 text-xs py-4">아직 작성된 댓글이 없습니다.<br />앞으로 방문할 사람들을 위해 팁을 남겨주세요!</p>
+                                                ) : (
+                                                    comments.map((comment, idx) => (
+                                                        <div key={comment.id} className="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <div className="size-6 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-50">
+                                                                    {/* 익명 프로필 이미지 */}
+                                                                    <span className="material-symbols-outlined text-slate-300 text-[16px]">person</span>
+                                                                </div>
+                                                                <span className="text-xs font-bold text-slate-700">익명의 해적</span>
+                                                                <div className="ml-auto flex items-center gap-2">
+                                                                    <span className="text-[10px] text-slate-300">
+                                                                        {new Date(comment.created_at).toLocaleDateString()}
+                                                                    </span>
+                                                                    {user && user.id === comment.user_id && !editingCommentId && (
+                                                                        <div className="flex gap-1 text-[10px] text-slate-400">
+                                                                            <button onClick={() => handleStartEdit(comment)} className="hover:text-blue-500 hover:underline">수정</button>
+                                                                            <span className="text-slate-200">|</span>
+                                                                            <button onClick={() => handleDeleteComment(comment.id)} className="hover:text-red-500 hover:underline">삭제</button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {editingCommentId === comment.id ? (
+                                                                <div className="mt-2">
+                                                                    <textarea
+                                                                        value={editContent}
+                                                                        onChange={(e) => setEditContent(e.target.value)}
+                                                                        className="w-full text-sm p-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50 min-h-[60px]"
+                                                                    />
+                                                                    <div className="flex justify-end gap-2 mt-2">
+                                                                        <button
+                                                                            onClick={() => setEditingCommentId(null)}
+                                                                            className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                                                        >
+                                                                            취소
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleSaveEdit(comment.id)}
+                                                                            className="text-xs px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                                                                        >
+                                                                            저장
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-sm text-slate-600 leading-relaxed break-words whitespace-pre-wrap text-left pl-1">
+                                                                    {comment.content}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+
+                                            {/* 댓글 작성 폼 */}
+                                            <form onSubmit={handleSubmitComment} className="relative mt-2">
+                                                <input
+                                                    type="text"
+                                                    value={newComment}
+                                                    onChange={(e) => setNewComment(e.target.value)}
+                                                    placeholder="익명으로 댓글 남기기..."
+                                                    className="w-full bg-white border border-slate-200 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b8cee]/50 focus:border-[#2b8cee] transition-all shadow-sm placeholder-slate-400"
+                                                    maxLength={200}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={!newComment.trim() || submitting}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-[#2b8cee] hover:bg-blue-50 disabled:text-slate-300 disabled:hover:bg-transparent transition-colors"
+                                                >
+                                                    <span className="material-symbols-rounded text-[20px]">send</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
