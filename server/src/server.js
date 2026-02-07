@@ -9,6 +9,7 @@ const companyRoutes = require('./routes/companyRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const userRoutes = require('./routes/userRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
 
 
 
@@ -33,6 +34,7 @@ app.use('/api/company', companyRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 // Test route
 app.get('/', (req, res) => {

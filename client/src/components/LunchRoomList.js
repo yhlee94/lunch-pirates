@@ -108,7 +108,10 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                         <span className="material-symbols-rounded text-yellow-500 text-2xl">trophy</span>
                         <span className="text-xs font-bold text-slate-600">맛집 랭킹</span>
                     </button>
-                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                    <button
+                        onClick={() => navigate('/gacha')}
+                        className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80"
+                    >
                         <span className="material-symbols-rounded text-rose-400 text-2xl">local_activity</span>
                         <span className="text-xs font-bold text-slate-600">티켓</span>
                     </button>

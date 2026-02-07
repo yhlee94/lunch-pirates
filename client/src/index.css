@@ -34,7 +34,7 @@
 body {
     margin: 0;
     font-family: 'Fredoka', sans-serif;
-    cursor: url('https://cur.cursors-4u.net/games/gam-4/gam372.cur'), auto;
+    -webkit-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

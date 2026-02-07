@@ -218,7 +218,7 @@ const login = async (req, res) => {
         // 2. 사용자 & 회사 정보 조회 (JOIN 추가)
         const result = await pool.query(
             `SELECT u.id, u.email, u.password, u.name, u.role, u.company_id, 
-                    c.latitude as company_latitude, c.longitude as company_longitude
+                    c.latitude as company_latitude, c.longitude as company_longitude, u.ticket_count
              FROM users u
              JOIN companies c ON u.company_id = c.id
              WHERE u.email = $1 AND u.deleted_yn = $2`,
@@ -269,7 +269,8 @@ const login = async (req, res) => {
                 role: user.role,
                 company_id: user.company_id,
                 companyLatitude: user.company_latitude,
-                companyLongitude: user.company_longitude
+                companyLongitude: user.company_longitude,
+                ticket_count : user.ticket_count
             }
         });
 
@@ -289,7 +290,7 @@ const getMe = async (req, res) => {
         const userId = req.user.userId;
 
         const result = await pool.query(
-            `SELECT id, email, name, profile_image_url, role, created_at 
+            `SELECT id, email, name, profile_image_url, role, created_at, ticket_count
              FROM users 
              WHERE id = $1 AND deleted_yn = $2`,
             [userId, 'N']

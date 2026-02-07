@@ -1,5 +1,5 @@
 // client/src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -11,6 +11,9 @@ import CreateRoom from './components/CreateRoom';
 import RoomLobby from './components/RoomLobby';
 import RankingPage from './components/RankingPage';
 import MyRoom from './components/MyRoom';
+import GachaPage from './components/GachaPage';
+import GachaResult from './components/GachaResult';
+import CustomCursor from './components/CustomCursor';
 import './App.css';
 
 function App() {
@@ -20,6 +23,8 @@ function App() {
   });
   const [showRegister, setShowRegister] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  /* 커서 이미지 컴포넌트 사용 */
 
   // 로그인 성공 시 호출
   const handleLoginSuccess = (userData) => {
@@ -36,6 +41,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="App">
+        <CustomCursor />
         <Routes>
           {/* 이메일 인증 (라우터 필요) */}
           <Route path="/verify-email" element={<EmailVerification />} />
@@ -48,6 +54,8 @@ function App() {
           <Route path="/room/:roomId" element={<RoomLobby user={user} />} />
           <Route path="/rankings" element={<RankingPage user={user} />} />
           <Route path="/my-room" element={<MyRoom user={user} onBack={() => window.history.back()} />} />
+          <Route path="/gacha" element={<GachaPage />} />
+          <Route path="/gacha/result" element={<GachaResult />} />
 
           {/* 기본 화면들 (라우터 불필요, 기존 방식 유지) */}
           <Route path="*" element={

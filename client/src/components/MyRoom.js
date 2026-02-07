@@ -256,25 +256,28 @@ function MyRoom({ user, onBack }) {
                 </section>
             </main>
 
-            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-[#1e293b] dark:bg-slate-800 text-white rounded-full p-2 shadow-2xl flex items-center justify-around z-50 backdrop-blur-lg bg-opacity-90 border border-slate-700 max-w-[400px]">
+            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-[#1e293b] text-white rounded-full p-2 shadow-2xl flex items-center justify-around z-50 backdrop-blur-lg bg-opacity-90 border border-slate-700 max-w-[400px]">
                 <button
                     onClick={() => navigate('/')}
                     className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                    <span className="material-icons-round">home</span>
+                    <span className="material-symbols-outlined text-[24px]">home</span>
                 </button>
                 <button
                     onClick={() => navigate('/rankings')}
                     className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                    <span className="material-icons-round">emoji_events</span>
+                    <span className="material-symbols-outlined text-[24px]">emoji_events</span>
+                </button>
+                <button
+                    onClick={() => navigate('/gacha')}
+                    className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                    <span className="material-symbols-outlined text-[24px]">local_activity</span>
                 </button>
                 <button className="p-3 rounded-full text-primary bg-white/10 relative">
-                    <span className="material-icons-round">face</span>
+                    <span className="material-symbols-outlined text-[24px] text-[#2b8cee] fill-current" style={{ fontVariationSettings: "'FILL' 1" }}>face</span>
                     <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-slate-800"></span>
-                </button>
-                <button className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                    <span className="material-icons-round">settings</span>
                 </button>
             </nav>
             <div className="fixed bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white dark:from-[#0f172a] to-transparent pointer-events-none z-40"></div>

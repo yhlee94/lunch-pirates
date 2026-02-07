@@ -423,19 +423,16 @@ function RankingPage({ user }) {
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-slate-800"></span>
                         </button>
                         <button
-                            onClick={() => navigate('/my-room')} // Assuming /my-room route exists or onNavigateToMyRoom logic needed. 
-                            // Wait, MyRoom is a component shown via state in LunchRoomList usually, or checks user. 
-                            // But usually if there's a route /my-room, we use that. 
-                            // If MyRoom is just a modal in main, this might fail. 
-                            // But for now let's assume /my-room or ask user.
-                            // Actually previous code showed MyRoom component usage inside LunchRoomList logic maybe?
-                            // Let's check App.js to see routes.
+                            onClick={() => navigate('/gacha')}
+                            className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-[24px]">local_activity</span>
+                        </button>
+                        <button
+                            onClick={() => navigate('/my-room')}
                             className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                         >
                             <span className="material-symbols-outlined text-[24px]">face</span>
-                        </button>
-                        <button className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                            <span className="material-symbols-outlined text-[24px]">settings</span>
                         </button>
                     </nav>
                 </div>
