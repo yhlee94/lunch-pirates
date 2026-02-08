@@ -49,6 +49,8 @@ function CreateRoom({ user }) {
         return target < now;
     };
 
+    const [isAlreadyInRoom, setIsAlreadyInRoom] = useState(null); // 참여 중인 방 정보 저장
+
     // Initialize Map
     useEffect(() => {
         if (window.kakao && window.kakao.maps) {
@@ -59,6 +61,26 @@ function CreateRoom({ user }) {
         } else {
             console.error('Kakao map not loaded');
         }
+
+        // ✅ 승선 중인지 사전에 체크 (요청 낭비 방지)
+        const checkParticipation = async () => {
+            try {
+                const token = sessionStorage.getItem('token');
+                const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (response.data.success) {
+                    const myRoom = response.data.rooms.find(r => r.is_participant);
+                    if (myRoom) {
+                        setIsAlreadyInRoom(myRoom.restaurant_name);
+                        showAlert(`이미 [${myRoom.restaurant_name}]에 승선 중입니다. 새 방을 만들려면 먼저 하선해주세요!`, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('참여 여부 체크 실패:', error);
+            }
+        };
+        checkParticipation();
     }, []);
 
     const initializeMap = () => {
@@ -178,6 +200,11 @@ function CreateRoom({ user }) {
 
 
     const handleSubmit = async () => {
+        if (isAlreadyInRoom) {
+            showAlert(`이미 [${isAlreadyInRoom}] 해적선에 승선 중입니다! 먼저 하선해주세요.`, 'error');
+            return;
+        }
+
         if (!selectedPlace) {
             showAlert('식당을 선택해주세요!', 'error');
             return;
@@ -226,12 +253,13 @@ function CreateRoom({ user }) {
             );
 
             if (response.data.success) {
-                showAlert(`"${selectedPlace.name} 출항해요!" 방이 생성되었습니다! 🏴‍☠️`, 'info');
+                showAlert(`"${selectedPlace.name} 출항해요!" 방이 생성되었습니다!`, 'info');
                 navigate('/'); // Redirect to home/list
             }
         } catch (error) {
-            showAlert('방 생성에 실패했습니다. 다시 시도해주세요.', 'error');
-            console.error(error);
+            const message = error.response?.data?.message || '방 생성에 실패했습니다. 다시 시도해주세요.';
+            showAlert(message, 'error');
+            console.error('방 생성 에러:', error);
         } finally {
             setIsSubmitting(false);
         }

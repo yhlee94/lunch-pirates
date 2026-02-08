@@ -12,7 +12,7 @@ function RoomLobby({ user }) {
     const [room, setRoom] = useState(location.state?.room || null);
     const [loading, setLoading] = useState(!room);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { showAlert } = useAlert();
+    const { showAlert, showConfirm } = useAlert();
 
     const fetchRoomData = async (silent = false) => {
         try {
@@ -50,6 +50,21 @@ function RoomLobby({ user }) {
         try {
             setIsSubmitting(true);
             const token = sessionStorage.getItem('token');
+
+            // ✅ 먼저 다른 방에 승선 중인지 체크 (요청 낭비 및 400 에러 방지)
+            const checkRes = await axios.get(`${API_BASE_URL}/api/rooms`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (checkRes.data.success) {
+                const myRoom = checkRes.data.rooms.find(r => r.is_participant);
+                if (myRoom && myRoom.id !== room.id) {
+                    showAlert(`이미 [${myRoom.restaurant_name}] 해적선에 승선 중입니다! 먼저 하선해주세요.`, 'error');
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/join`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -57,7 +72,8 @@ function RoomLobby({ user }) {
                 await fetchRoomData(true); // Re-fetch data silently to show updated participants and status
             }
         } catch (error) {
-            showAlert(error.response?.data?.message || 'Error joining room', 'error');
+            const message = error.response?.data?.message || 'Error joining room';
+            showAlert(message, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -82,22 +98,26 @@ function RoomLobby({ user }) {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Really cancel this voyage?')) return;
-        try {
-            setIsSubmitting(true);
-            const token = sessionStorage.getItem('token');
-            const response = await axios.delete(`${API_BASE_URL}/api/rooms/${room.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response.data.success) {
-                navigate('/');
+        showConfirm('정말로 향해를 삭제하시겠습니까?', async () => {
+            try {
+                setIsSubmitting(true);
+                const token = sessionStorage.getItem('token');
+                const response = await axios.delete(`${API_BASE_URL}/api/rooms/${room.id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (response.data.success) {
+                    navigate('/');
+                }
+            } catch (error) {
+                showAlert(error.response?.data?.message || 'Error deleting room', 'error');
+            } finally {
+                setIsSubmitting(false);
             }
-        } catch (error) {
-            showAlert(error.response?.data?.message || 'Error deleting room', 'error');
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
+
+    const isCreator = user?.id === room?.creator?.id; // Check creator
+    const isParticipant = room?.is_participant; // Check if joined
 
     if (loading || !room) {
         return (
@@ -106,9 +126,6 @@ function RoomLobby({ user }) {
             </div>
         );
     }
-
-    const isCreator = user?.id === room.creator?.id; // Check creator
-    const isParticipant = room.is_participant; // Check if joined
 
     // Formatting
     const formattedTime = new Date(room.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

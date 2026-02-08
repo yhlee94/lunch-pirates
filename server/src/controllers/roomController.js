@@ -24,6 +24,22 @@ exports.createRoom = async (req, res) => {
             });
         }
 
+        // 0. 이미 다른 배에 승선 중인지 체크
+        const activeParticipation = await client.query(
+            `SELECT p.room_id, lr.restaurant_name
+             FROM participants p
+             JOIN lunch_rooms lr ON p.room_id = lr.id
+             WHERE p.user_id = $1 AND p.left_at IS NULL AND lr.status = 'waiting'`,
+            [creator_id]
+        );
+
+        if (activeParticipation.rows.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `이미 [${activeParticipation.rows[0].restaurant_name}] 해적선에 승선 중입니다! 먼저 하선해주세요.`
+            });
+        }
+
         await client.query('BEGIN');
 
         // 방 생성
@@ -60,10 +76,14 @@ exports.createRoom = async (req, res) => {
             }
         });
 
-        // ✅ 실시간 방 목록 갱신 알림
+        // ✅ 실시간 방 목록 갱신 및 새 방 알림 전송
         const io = req.app.get('io');
         if (io) {
             io.emit('refresh_room_list');
+            io.emit('new_room_created', {
+                restaurant_name: room.restaurant_name,
+                restaurant_address: room.restaurant_address
+            });
         }
 
     } catch (error) {
@@ -171,12 +191,12 @@ exports.cleanupOldRooms = async () => {
     try {
         await client.query('BEGIN');
 
-        // 1. 기간 만료된 방들과 현재 인원수 조회
+        // 1. 기간 만료된 방들과 현재 인원수 조회 (1분 여유를 두어 클라이언트 알림이 동작할 시간을 줌)
         const expiredRoomsResult = await client.query(
             `SELECT lr.id, COUNT(p.id) as current_participants
              FROM lunch_rooms lr
              LEFT JOIN participants p ON lr.id = p.room_id AND p.left_at IS NULL
-             WHERE lr.departure_time < (NOW() AT TIME ZONE 'Asia/Seoul')
+             WHERE lr.departure_time < (NOW() AT TIME ZONE 'Asia/Seoul' - INTERVAL '1 minute')
                AND lr.deleted_yn = 'N'
              GROUP BY lr.id`
         );
@@ -216,6 +236,20 @@ exports.cleanupOldRooms = async () => {
                  SET left_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
                      exit_type = 'sailed'
                  WHERE room_id = ANY($1) AND left_at IS NULL`,
+                [sailedRoomIds]
+            );
+
+            // 참가자들에게 티켓 2개씩 지급
+            await client.query(
+                `UPDATE users
+                 SET ticket_count = ticket_count + 2,
+                     updated_at = NOW()
+                 WHERE id IN (
+                     SELECT user_id 
+                     FROM participants 
+                     WHERE room_id = ANY($1) 
+                       AND exit_type = 'sailed'
+                 )`,
                 [sailedRoomIds]
             );
         }
@@ -284,13 +318,24 @@ exports.joinRoom = async (req, res) => {
             return res.status(400).json({ success: false, message: '이미 출항한 해적선입니다!' });
         }
 
-        // 3. 이미 참가 중인지 체크
-        const checkPart = await client.query(
-            'SELECT id FROM participants WHERE room_id = $1 AND user_id = $2 AND left_at IS NULL',
-            [roomId, userId]
+        // 3. 이미 다른 배에 승선 중인지 체크
+        const activeParticipation = await client.query(
+            `SELECT p.room_id, lr.restaurant_name 
+             FROM participants p 
+             JOIN lunch_rooms lr ON p.room_id = lr.id 
+             WHERE p.user_id = $1 AND p.left_at IS NULL AND lr.status = 'waiting'`,
+            [userId]
         );
-        if (checkPart.rows.length > 0) {
-            return res.status(400).json({ success: false, message: '이미 승선 중인 해적입니다!' });
+
+        if (activeParticipation.rows.length > 0) {
+            // 현재 타려는 배와 이미 타고 있는 배가 같은지 확인
+            if (activeParticipation.rows[0].room_id == roomId) {
+                return res.status(400).json({ success: false, message: '이미 이 해적선에 승선 중입니다!' });
+            }
+            return res.status(400).json({
+                success: false,
+                message: `이미 [${activeParticipation.rows[0].restaurant_name}] 해적선에 승선 중입니다! 먼저 하선해주세요.`
+            });
         }
 
         // 4. 인원 정원 체크

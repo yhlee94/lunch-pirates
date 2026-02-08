@@ -165,7 +165,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                             </div>
                         ) : rooms.length === 0 ? (
-                            <div className="w-full flex justify-center items-center text-slate-500 font-bold py-10">
+                            <div className="w-full flex justify-center items-center text-slate-500 font-bold pt-24 pb-10">
                                 현재 모집 중인 방이 없습니다.
                             </div>
                         ) : (

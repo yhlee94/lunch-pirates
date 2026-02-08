@@ -1,5 +1,8 @@
-const { app, BrowserWindow, Tray, Menu } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const path = require('path');
+
+// ✅ 보안 경고 무시 (개발 중 콘솔을 깔끔하게 유지하기 위함)
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 let mainWindow;
 let tray;
@@ -22,6 +25,7 @@ function createWindow() {
             height: 32
         },
         autoHideMenuBar: true,
+        icon: path.join(__dirname, 'assets/Common/system.png'),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -108,6 +112,231 @@ function createWindow() {
         return false;
     });
 }
+
+// ✅ 출항 알림 전체 화면 팝업
+ipcMain.on('show-wallpaper', (event) => {
+    // ... 기존 코드 유지 (생략 가능하나 가독성을 위해 전체 교체됨)
+    console.log('📢 [Main] 출항 신호 수신됨! 전체화면 팝업 생성...');
+
+    const imageUrl = isDev
+        ? 'http://localhost:3000/assets/Common/wallpaper.png'
+        : `file://${path.join(__dirname, '../build/assets/Common/wallpaper.png')}`.replace(/\\/g, '/');
+
+    let splashWindow = new BrowserWindow({
+        width: 1920, height: 1080, fullscreen: true, frame: false,
+        alwaysOnTop: true, skipTaskbar: true, backgroundColor: '#000000',
+        webPreferences: { nodeIntegration: true, contextIsolation: false, webSecurity: false }
+    });
+
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: black; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+                img { width: 100%; height: 100%; object-fit: cover; animation: fadeIn 1.2s ease-in; }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            </style>
+        </head>
+        <body onclick="window.close()"><img src="${imageUrl}" /></body>
+        </html>1
+    `;
+    splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+    splashWindow.once('ready-to-show', () => { splashWindow.show(); splashWindow.focus(); });
+    splashWindow.on('closed', () => { splashWindow = null; });
+});
+
+// ✅ 새 해적선 알림 (우측 하단 슬라이드 업)
+ipcMain.on('show-notification', (event, data) => {
+    const { screen } = require('electron');
+    const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+
+    const winWidth = 380;
+    const winHeight = 300;
+    const padding = 20;
+
+    let notifyWindow = new BrowserWindow({
+        width: winWidth,
+        height: winHeight,
+        x: screenWidth - winWidth - padding,
+        y: screenHeight,
+        frame: false,
+        alwaysOnTop: true,
+        transparent: true,
+        skipTaskbar: true,
+        resizable: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    });
+
+    const departureDate = new Date(data.departure_time || new Date());
+    const month = departureDate.getMonth() + 1;
+    const date = departureDate.getDate();
+    const timeStr = departureDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const remaining = (data.max_participants || 4) - 1;
+
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+                body {
+                    margin: 0; padding: 20px; overflow: hidden;
+                    font-family: 'Noto Sans KR', sans-serif;
+                    background: transparent;
+                }
+                .room-card {
+                    width: 330px;
+                    height: 250px;
+                    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+                    border-radius: 2.5rem;
+                    border: 1px solid rgba(255, 255, 255, 0.6);
+                    position: relative;
+                    padding: 24px;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                }
+                .card-top-bg {
+                    position: absolute;
+                    top: 0; left: 0;
+                    width: 100%; height: 35%;
+                    background: linear-gradient(to b, rgba(255, 247, 237, 0.5) 0%, transparent 100%);
+                    border-radius: 2.5rem 2.5rem 0 0;
+                    pointer-events: none;
+                }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    z-index: 10;
+                }
+                .date-info {
+                    text-align: left;
+                }
+                .date-text {
+                    display: block;
+                    font-size: 24px;
+                    font-weight: 900;
+                    color: #1e293b;
+                    letter-spacing: -0.5px;
+                }
+                .sub-text {
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: #64748b;
+                }
+                .badge {
+                    background: rgba(249, 115, 22, 0.1);
+                    color: #ea580c;
+                    font-size: 14px;
+                    font-weight: 800;
+                    padding: 10px 20px;
+                    border-radius: 9999px;
+                    border: 1px solid rgba(249, 115, 22, 0.2);
+                    white-space: nowrap;
+                }
+                .content {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin: 20px 0;
+                    z-index: 10;
+                }
+                .sailing-icon {
+                    font-size: 32px;
+                    color: #2563eb;
+                }
+                .restaurant-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+                .restaurant-name {
+                    font-size: 18px;
+                    font-weight: 900;
+                    color: #1e293b;
+                    margin: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .restaurant-address {
+                    font-size: 14px;
+                    color: #64748b;
+                    margin: 2px 0 0 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .join-button {
+                    width: 100%;
+                    padding: 12px 0;
+                    background: #f1f5f9;
+                    color: #334155;
+                    font-weight: 700;
+                    font-size: 14px;
+                    border: none;
+                    border-radius: 0.75rem;
+                    z-index: 10;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="room-card">
+                <div class="card-top-bg"></div>
+                <div class="header">
+                    <div class="date-info">
+                        <span class="date-text">${month}월 ${date}일</span>
+                        <span class="sub-text">${timeStr} • ${remaining}명 남음</span>
+                    </div>
+                    <div class="badge">모집중</div>
+                </div>
+                <div class="content">
+                    <div class="sailing-icon">⛵</div>
+                    <div class="restaurant-info">
+                        <div class="restaurant-name">${data.restaurant_name}</div>
+                        <div class="restaurant-address">${data.restaurant_address}</div>
+                    </div>
+                </div>
+                <button class="join-button">탑승하기</button>
+            </div>
+        </body>
+        </html>
+    `;
+
+    notifyWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+    let currentY = screenHeight;
+    const targetY = screenHeight - winHeight - padding;
+
+    const slideUp = setInterval(() => {
+        if (currentY <= targetY) {
+            clearInterval(slideUp);
+            setTimeout(() => {
+                const slideDown = setInterval(() => {
+                    if (currentY >= screenHeight) {
+                        clearInterval(slideDown);
+                        notifyWindow.close();
+                    } else {
+                        currentY += 3;
+                        notifyWindow.setPosition(screenWidth - winWidth - padding, Math.floor(currentY));
+                    }
+                }, 10);
+            }, 5000); // 5초 대기
+        } else {
+            currentY -= 5;
+            notifyWindow.setPosition(screenWidth - winWidth - padding, Math.floor(currentY));
+        }
+    }, 10);
+
+    notifyWindow.on('closed', () => { notifyWindow = null; });
+});
 
 function createTray() {
     // 아이콘 경로 설정 (public 폴더 내 assets/Common/system.png 사용)
