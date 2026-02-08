@@ -35,8 +35,15 @@ body {
     margin: 0;
     font-family: 'Fredoka', sans-serif;
     -webkit-font-smoothing: antialiased;
-    -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #ffffff;
+}
+
+.App {
+    position: relative;
+    background-color: #ffffff;
+    min-height: 100vh;
+    padding-top: 32px;
 }
 
 code {
@@ -130,4 +137,57 @@ code {
     100% {
         left: 100%;
     }
+}
+
+/* Electron Draggable Region */
+.App {
+    position: relative;
+}
+
+/* 상단 영역을 드래그 가능하게 설정 (필요시 특정 요소에 부여) */
+.electron-nav {
+    -webkit-app-region: drag;
+    height: 32px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background-color: #ffffff;
+}
+
+/* Sailing Ship Animation */
+@keyframes sail-tilt {
+
+    0%,
+    100% {
+        transform: rotate(-3deg);
+    }
+
+    50% {
+        transform: rotate(3deg);
+    }
+}
+
+.animate-sail {
+    animation: sail-tilt 3s ease-in-out infinite;
+}
+
+/* Recruiting Badge Shine */
+@keyframes badge-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.animate-badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
 }

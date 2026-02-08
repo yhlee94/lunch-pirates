@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function CreateRoom({ user }) {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ function CreateRoom({ user }) {
     const [places, setPlaces] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const { showAlert } = useAlert();
     const [mapInstance, setMapInstance] = useState(null);
     const markersRef = useRef([]);
 
@@ -149,9 +151,9 @@ function CreateRoom({ user }) {
                     mapInstance.panTo(moveLatLng);
                 }
             } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
-                alert('검색 결과가 존재하지 않습니다.');
+                showAlert('검색 결과가 존재하지 않습니다.', 'info');
             } else if (status === window.kakao.maps.services.Status.ERROR) {
-                alert('검색 중 오류가 발생했습니다.');
+                showAlert('검색 중 오류가 발생했습니다.', 'error');
             }
         }, { category_group_code: 'FD6' }); // Optional: restrict to food/restaurants
     };
@@ -177,24 +179,24 @@ function CreateRoom({ user }) {
 
     const handleSubmit = async () => {
         if (!selectedPlace) {
-            alert('식당을 선택해주세요!');
+            showAlert('식당을 선택해주세요!', 'error');
             return;
         }
 
         if (!departureTime) {
-            alert('출발 시간을 선택해주세요!');
+            showAlert('출발 시간을 선택해주세요!', 'error');
             return;
         }
 
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const departure = new Date();
             const [hours, minutes] = departureTime.split(':');
             departure.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
             if (departure < new Date()) {
-                alert('이미 지나간 시간으로는 방을 만들 수 없습니다!');
+                showAlert('이미 지나간 시간으로는 방을 만들 수 없습니다!', 'error');
                 setIsSubmitting(false);
                 return;
             }
@@ -224,11 +226,11 @@ function CreateRoom({ user }) {
             );
 
             if (response.data.success) {
-                alert(`"${selectedPlace.name} 출항해요!" 방이 생성되었습니다! 🏴‍☠️`);
+                showAlert(`"${selectedPlace.name} 출항해요!" 방이 생성되었습니다! 🏴‍☠️`, 'info');
                 navigate('/'); // Redirect to home/list
             }
         } catch (error) {
-            alert('방 생성에 실패했습니다. 다시 시도해주세요.');
+            showAlert('방 생성에 실패했습니다. 다시 시도해주세요.', 'error');
             console.error(error);
         } finally {
             setIsSubmitting(false);

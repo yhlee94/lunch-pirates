@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function RoomLobby({ user }) {
     const { roomId } = useParams();
@@ -11,11 +12,12 @@ function RoomLobby({ user }) {
     const [room, setRoom] = useState(location.state?.room || null);
     const [loading, setLoading] = useState(!room);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showAlert } = useAlert();
 
     const fetchRoomData = async (silent = false) => {
         try {
             if (!silent && !room) setLoading(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -24,13 +26,13 @@ function RoomLobby({ user }) {
                 if (foundRoom) {
                     setRoom(foundRoom);
                 } else {
-                    alert('방을 찾을 수 없습니다.');
+                    showAlert('방을 찾을 수 없습니다.', 'error');
                     navigate('/');
                 }
             }
         } catch (error) {
             console.error('Failed to fetch room:', error);
-            alert('방 정보를 불러오는데 실패했습니다.');
+            showAlert('방 정보를 불러오는데 실패했습니다.', 'error');
             navigate('/');
         } finally {
             setLoading(false);
@@ -47,7 +49,7 @@ function RoomLobby({ user }) {
     const handleJoin = async () => {
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/join`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -55,7 +57,7 @@ function RoomLobby({ user }) {
                 await fetchRoomData(true); // Re-fetch data silently to show updated participants and status
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error joining room');
+            showAlert(error.response?.data?.message || 'Error joining room', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -64,7 +66,7 @@ function RoomLobby({ user }) {
     const handleLeave = async () => {
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/leave`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -73,7 +75,7 @@ function RoomLobby({ user }) {
                 await fetchRoomData(true);
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error leaving room');
+            showAlert(error.response?.data?.message || 'Error leaving room', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -83,7 +85,7 @@ function RoomLobby({ user }) {
         if (!window.confirm('Really cancel this voyage?')) return;
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.delete(`${API_BASE_URL}/api/rooms/${room.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -91,7 +93,7 @@ function RoomLobby({ user }) {
                 navigate('/');
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error deleting room');
+            showAlert(error.response?.data?.message || 'Error deleting room', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -155,9 +157,6 @@ function RoomLobby({ user }) {
                 }
                 .cloud-anim {
                     animation: float 8s ease-in-out infinite;
-                }
-                body {
-                    min-height: max(884px, 100dvh);
                 }
             `}</style>
 

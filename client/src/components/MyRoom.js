@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function MyRoom({ user, onBack }) {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ function MyRoom({ user, onBack }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [equipping, setEquipping] = useState(false);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = High to Low, 'asc' = Low to High
+    const { showAlert } = useAlert();
 
     const rarityWeights = {
         'Mythic': 5,
@@ -27,7 +29,7 @@ function MyRoom({ user, onBack }) {
 
     const fetchItems = useCallback(async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.get(`${API_BASE_URL}/api/users/items`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -61,7 +63,7 @@ function MyRoom({ user, onBack }) {
         if (equipping) return;
         try {
             setEquipping(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.post(`${API_BASE_URL}/api/users/equip`, { itemId }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -70,7 +72,7 @@ function MyRoom({ user, onBack }) {
                 await fetchItems();
             }
         } catch (error) {
-            alert(error.response?.data?.message || '장착 중 오류가 발생했습니다.');
+            showAlert(error.response?.data?.message || '장착 중 오류가 발생했습니다.', 'error');
         } finally {
             setEquipping(false);
         }

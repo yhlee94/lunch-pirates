@@ -25,8 +25,8 @@ function Login({ onLoginSuccess, onShowRegister, onShowForgotPassword }) {
             const data = await response.json();
 
             if (response.ok) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                sessionStorage.setItem('token', data.token);
+                sessionStorage.setItem('user', JSON.stringify(data.user));
                 onLoginSuccess(data.user);
             } else {
                 setError(data.message || '로그인에 실패했습니다.');
@@ -42,7 +42,7 @@ function Login({ onLoginSuccess, onShowRegister, onShowForgotPassword }) {
         <div className="bg-white text-slate-800 flex flex-col items-center justify-center font-sans antialiased relative overflow-hidden h-screen selection:bg-blue-100 selection:text-blue-700">
             {/* Background Blobs */}
             <div className="fixed inset-0 pointer-events-none z-0 bg-white">
-                <div className="absolute top-[-10%] right-[-5%] w-[60vh] h-[60vh] bg-slate-50 rounded-full blur-[80px] opacity-80"></div>
+                <div className="absolute top-[10%] right-[-5%] w-[60vh] h-[60vh] bg-slate-50 rounded-full blur-[80px] opacity-80"></div>
                 <div className="absolute bottom-[-10%] left-[-10%] w-[50vh] h-[50vh] bg-blue-50/40 rounded-full blur-[100px]"></div>
             </div>
 

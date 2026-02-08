@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomAlert from './CustomAlert';
 
 const GachaResult = () => {
     const navigate = useNavigate();
@@ -7,6 +8,15 @@ const GachaResult = () => {
     const [step, setStep] = useState('rolling'); // 'rolling' -> 'burst' -> 'result'
     const [resultData, setResultData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, message: '', type: 'info' });
+
+    const showAlert = (message, type = 'info') => {
+        setAlertConfig({ isOpen: true, message, type });
+    };
+
+    const closeAlert = () => {
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    };
 
     // 몬스터볼(캡슐) 클릭 시 상점 지급 API 호출
     const handleCapsuleClick = async () => {
@@ -14,7 +24,7 @@ const GachaResult = () => {
 
         setIsLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/push-button`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -25,12 +35,12 @@ const GachaResult = () => {
                 setResultData(data);
                 setStep('burst');
             } else {
-                alert(data.message);
-                navigate('/gacha'); // 실패 시 가챠 페이지로 이동
+                showAlert(data.message, 'error');
+                setTimeout(() => navigate('/gacha'), 2000);
             }
         } catch (error) {
             console.error('푸시 버튼 에러:', error);
-            alert('아이템 지급 중 오류가 발생했습니다.');
+            showAlert('아이템 지급 중 오류가 발생했습니다.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -125,7 +135,7 @@ const GachaResult = () => {
                     <img
                         src={process.env.PUBLIC_URL + (resultData?.item.image_url || '/assets/Character/basicFoam.png')}
                         alt={resultData?.item.name}
-                        className="relative w-80 h-80 object-contain transition-transform duration-500 hover:scale-110 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] z-20"
+                        className="relative w-80 h-80 object-contain transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] z-20"
                     />
                 </div>
 
@@ -225,6 +235,13 @@ const GachaResult = () => {
             {step === 'rolling' && renderRolling()}
             {step === 'burst' && renderBurst()}
             {step === 'result' && renderResult()}
+
+            <CustomAlert
+                isOpen={alertConfig.isOpen}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={closeAlert}
+            />
         </div>
     );
 };

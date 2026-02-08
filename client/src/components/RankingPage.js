@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function RankingPage({ user }) {
     const navigate = useNavigate();
@@ -14,13 +15,14 @@ function RankingPage({ user }) {
     const [submitting, setSubmitting] = useState(false);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editContent, setEditContent] = useState('');
+    const { showAlert } = useAlert();
 
     // 댓글 삭제
     const handleDeleteComment = async (commentId) => {
         if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
         try {
             const response = await axios.delete(`${API_BASE_URL}/api/comments/${commentId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
             });
             if (response.data.success) {
                 // UI에서 즉시 제거
@@ -28,7 +30,7 @@ function RankingPage({ user }) {
             }
         } catch (error) {
             console.error(error);
-            alert('댓글 삭제 권한이 없거나 오류가 발생했습니다.');
+            showAlert('댓글 삭제 권한이 없거나 오류가 발생했습니다.', 'error');
         }
     };
 
@@ -45,7 +47,7 @@ function RankingPage({ user }) {
             const response = await axios.put(`${API_BASE_URL}/api/comments/${commentId}`, {
                 content: editContent
             }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
             });
             if (response.data.success) {
                 setComments(prev => prev.map(c => c.id === commentId ? { ...c, content: editContent } : c));
@@ -54,7 +56,7 @@ function RankingPage({ user }) {
             }
         } catch (error) {
             console.error(error);
-            alert('댓글 수정 권한이 없거나 오류가 발생했습니다.');
+            showAlert('댓글 수정 권한이 없거나 오류가 발생했습니다.', 'error');
         }
     };
 
@@ -62,7 +64,7 @@ function RankingPage({ user }) {
     const fetchComments = async (restaurantId) => {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/comments/${restaurantId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
             });
             if (response.data.success) {
                 setComments(response.data.comments);
@@ -100,7 +102,7 @@ function RankingPage({ user }) {
                 restaurant_id: expandedRestaurantId,
                 content: newComment
             }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
             });
 
             if (response.data.success) {
@@ -108,7 +110,7 @@ function RankingPage({ user }) {
                 fetchComments(expandedRestaurantId); // 목록 새로고침
             }
         } catch (error) {
-            alert('댓글 작성에 실패했습니다.');
+            showAlert('댓글 작성에 실패했습니다.', 'error');
             console.error(error);
         } finally {
             setSubmitting(false);

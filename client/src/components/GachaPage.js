@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomAlert from './CustomAlert';
 
 const GachaPage = () => {
     const navigate = useNavigate();
@@ -10,6 +11,15 @@ const GachaPage = () => {
     const [showCoinAnim, setShowCoinAnim] = useState(false);
     const [showSuccessEffect, setShowSuccessEffect] = useState(false);
     const holdTimerRef = useRef(null);
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, message: '', type: 'info' });
+
+    const showAlert = (message, type = 'info') => {
+        setAlertConfig({ isOpen: true, message, type });
+    };
+
+    const closeAlert = () => {
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    };
 
     // 가챠 상태 및 티켓 수 가져오기
     useEffect(() => {
@@ -18,7 +28,7 @@ const GachaPage = () => {
 
     const fetchStatus = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/status`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -36,16 +46,16 @@ const GachaPage = () => {
     // 1단계: 동전 넣기
     const handleInsertCoin = async () => {
         if (isCoinInserted) {
-            alert('이미 티켓(코인)을 넣었습니다. 레버를 돌려주세요!');
+            showAlert('이미 티켓(코인)을 넣었습니다. 레버를 돌려주세요!', 'info');
             return;
         }
         if (ticketCount <= 0) {
-            alert('보유한 티켓이 없습니다!');
+            showAlert('보유한 티켓이 없습니다!', 'error');
             return;
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/insert-coin`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -60,7 +70,7 @@ const GachaPage = () => {
                     setShowCoinAnim(false);
                 }, 800);
             } else {
-                alert(data.message);
+                showAlert(data.message, 'error');
             }
         } catch (error) {
             console.error('코인 투입 에러:', error);
@@ -70,7 +80,7 @@ const GachaPage = () => {
     // 2단계: 레버 돌리기 완료
     const handleLeverComplete = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/pull-lever`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -83,7 +93,7 @@ const GachaPage = () => {
                 // 1초 후 효과 제거
                 setTimeout(() => setShowSuccessEffect(false), 1000);
             } else {
-                alert(data.message);
+                showAlert(data.message, 'error');
             }
         } catch (error) {
             console.error('레버 조작 에러:', error);
@@ -95,7 +105,7 @@ const GachaPage = () => {
     // 3단계: 최종 푸시 버튼 (애니메이션 페이지로 이동)
     const handlePushButton = async () => {
         if (!isCoinInserted || !isLeverPulled) {
-            alert('코인 투입과 레버 조작을 먼저 완료해주세요!');
+            showAlert('코인 투입과 레버 조작을 먼저 완료해주세요!', 'info');
             return;
         }
         // 최종 지급은 다음 페이지의 몬스터볼 클릭 시 이루어집니다.
@@ -104,11 +114,11 @@ const GachaPage = () => {
 
     const startHold = () => {
         if (!isCoinInserted) {
-            alert('먼저 티켓(코인)을 넣어주세요!');
+            showAlert('먼저 티켓(코인)을 넣어주세요!', 'info');
             return;
         }
         if (isLeverPulled) {
-            alert('이미 레버를 돌렸습니다. 하단의 PUSH 버튼을 눌러주세요!');
+            showAlert('이미 레버를 돌렸습니다. 하단의 PUSH 버튼을 눌러주세요!', 'info');
             return;
         }
         setIsPulling(true);
@@ -491,6 +501,13 @@ const GachaPage = () => {
                         <span className="material-symbols-outlined text-[24px]">face</span>
                     </button>
                 </nav>
+
+                <CustomAlert
+                    isOpen={alertConfig.isOpen}
+                    message={alertConfig.message}
+                    type={alertConfig.type}
+                    onClose={closeAlert}
+                />
             </div>
         </div>
     );

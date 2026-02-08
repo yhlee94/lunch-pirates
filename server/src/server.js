@@ -23,6 +23,8 @@ const io = socketIo(server, {
     }
 });
 
+app.set('io', io); // ✅ Make io accessible in controllers
+
 // Middleware
 app.use(cors({
     origin: '*', // 모든 출처 허용 (보안이 중요하다면 추후 특정 도메인으로 제한 필요)
