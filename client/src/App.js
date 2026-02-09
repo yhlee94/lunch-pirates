@@ -81,7 +81,8 @@ function App() {
               try {
                 const { ipcRenderer } = window.require('electron');
                 ipcRenderer.send('show-wallpaper', {
-                  participants: isDeparting.participants
+                  participants: isDeparting.participants,
+                  restaurant_name: isDeparting.restaurant_name
                 });
               } catch (e) {
                 console.error('IPC 전송 실패:', e);
