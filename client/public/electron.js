@@ -1,14 +1,14 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const path = require('path');
 
-// ✅ 보안 경고 무시 (개발 중 콘솔을 깔끔하게 유지하기 위함)
+// 보안 경고 무시 (개발 중 콘솔을 깔끔하게 유지하기 위함)
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 let mainWindow;
 let tray;
 app.isQuitting = false; // 종료 플래그 초기화
 
-// ✅ app.isPackaged 사용: 빌드된 앱인지 확실하게 감지
+// app.isPackaged 사용: 빌드된 앱인지 확실하게 감지
 const isDev = !app.isPackaged;
 
 function createWindow() {
@@ -33,7 +33,7 @@ function createWindow() {
         },
     });
 
-    // ✅ 개발: localhost:3000, 배포: 빌드된 파일 로드
+    // 개발: localhost:3000, 배포: 빌드된 파일 로드
     const startUrl = isDev
         ? 'http://localhost:3000'
         : `file://${path.join(__dirname, '../build/index.html')}`;
@@ -43,13 +43,13 @@ function createWindow() {
 
     mainWindow.loadURL(startUrl);
 
-    // ✅ 개발 환경에서만 개발자 도구 자동 열기
+    // 개발 환경에서만 개발자 도구 자동 열기
     if (isDev) {
         mainWindow.webContents.openDevTools();
     }
 
 
-    // ✅ 커스텀 메뉴 설정 (필요한 것만)
+    // 커스텀 메뉴 설정 (필요한 것만)
     const menuTemplate = [
         {
             label: '파일',
@@ -113,9 +113,9 @@ function createWindow() {
     });
 }
 
-// ✅ 출항 알림 전체 화면 팝업
+// 출항 알림 전체 화면 팝업
 ipcMain.on('show-wallpaper', (event, data) => {
-    console.log('📢 [Main] 출항 신호 수신됨! 전체화면 팝업 생성...');
+    console.log(' [Main] 출항 신호 수신됨! 전체화면 팝업 생성...');
 
     const imageUrl = isDev
         ? 'http://localhost:3000/assets/Common/wallpaper.png'
@@ -132,6 +132,7 @@ ipcMain.on('show-wallpaper', (event, data) => {
     });
 
     const participants = (data && data.participants) ? data.participants : [];
+    const restaurantName = (data && data.restaurant_name) ? data.restaurant_name : '출항 예정';
 
     const participantsHtml = participants.map(p => `
         <div class="participant">
@@ -141,69 +142,175 @@ ipcMain.on('show-wallpaper', (event, data) => {
 
     const htmlContent = `
         <!DOCTYPE html>
-        <html>
+        <html lang="en">
         <head>
-            <meta charset="UTF-8">
+            <meta charset="utf-8"/>
+            <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+            <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+            <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&amp;family=Pirata+One&amp;family=Roboto+Slab:wght@400;700&amp;display=swap" rel="stylesheet"/>
+            <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+            <script>
+                tailwind.config = {
+                    darkMode: "class",
+                    theme: {
+                        extend: {
+                            colors: {
+                                primary: "#8B4513","wood-light": "#D2691E","wood-dark": "#5D4037","rope": "#C2B280","gold": "#FFD700",
+                                "background-light": "#f3f4f6",
+                                "background-dark": "#1f2937",
+                            },
+                            fontFamily: {
+                                display: ['"Noto Sans KR"', 'sans-serif'],
+                                body: ['"Noto Sans KR"', 'sans-serif'],
+                                carved: ['"Noto Sans KR"', 'sans-serif'],
+                            },
+                            boxShadow: {
+                                'wood': '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+                                'inset-wood': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 4px 0 rgba(0, 0, 0, 0.5)',
+                            },
+                            backgroundImage: {
+                                'wood-pattern': "url('https://www.transparenttextures.com/patterns/wood-pattern.png')",
+                                'dark-wood-pattern': "url('https://www.transparenttextures.com/patterns/purty-wood.png')",
+                            }
+                        },
+                    },
+                };
+            </script>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
-                body { 
-                    margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
-                    background-color: black; display: flex; align-items: center; justify-content: center; 
-                    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+                .wood-texture {
+                    background-color: #8B4513;
+                    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB5y-uUHrKKJqrhUDzSz-fWczL67ZGH3ErIHpB1ZR9FSRexsbv8B2yIvFvTI-8y0aaerr2kA4GJRBfyAVB8TLB-hIxXUPTlkR36VeMCkfxLM3w58MwCP7vzHL784oJLk2SfcI4ErOfd-SbQ54VRhr2W4_Ark04OU9saTRX1abPaXl_iM4UKXAVknk1DBAqKfcEaC-nLiEFlJpuzGxd6ErUxkfQ2z9QhkjmiOjmMMhUG15CVqBk9TZ_nHTl8TZzdyqEmpC2TaISbXK8A);
+                    background-blend-mode: multiply;
+                }
+                .wood-texture-dark {
+                    background-color: #3E2723;
+                    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBjVy_98ceTgW3D-Gg7bYH85PauAlj3_SREoG7kzKZKAGeOJasW4WYfg7kzVHJqMfaFxrOf5_AgTZy5DckDHJ76QMw317jMkou9pDfEBoKyVeozkYmscV7j_JTJeL238EcLPA4F1PILzHMeH9_5AfHekp5j8ieQHaxJi15aglzHiKOhPnCGCO9znnS1ET6e5AYnEUfMsjg1SJdMKgRd8hD4_Mesh0Y95VWa2VTuVi-ZYdIyjXqF-O2vkzi1m9tkn80gv3kYdCFrgIw4);
+                    background-blend-mode: multiply;
+                }
+                .rope-line {
+                    background: repeating-linear-gradient(45deg, #d4c4a8, #d4c4a8 4px, #8c7b5d 4px, #8c7b5d 8px);
+                    width: 6px;
+                    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.5);
+                }
+                .wax-seal {
+                    background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.4);
+                    border: 2px solid #a93226;
+                }
+                .gold-coin {
+                    background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+                    border: 1px solid #d4af37;
+                }
+                .plank {
+                    position: relative;
+                    transform-origin: top center;
+                    transition: transform 0.2s ease;
+                }
+                .plank:hover {
+                    transform: rotate(-1deg) scale(1.02);
+                    z-index: 10;
+                }
+                .nail {
+                    width: 8px;
+                    height: 8px;
+                    background: radial-gradient(circle at 30% 30%, #95a5a6, #2c3e50);
+                    border-radius: 50%;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+                }
+                .porthole {
+                    box-shadow: 0 0 0 4px #b8860b,0 0 0 6px #5D4037,0 0 0 8px #8B4513,inset 0 0 10px rgba(0, 0, 0, 0.8);
+                }
+                .text-shadow-outline {
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                 }
                 #introVideo {
                     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
                     object-fit: cover; z-index: 200; background: black;
                 }
                 #mainContent {
-                    opacity: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+                    opacity: 0; width: 100%; height: 100%;
                     transition: opacity 1s ease-in;
                 }
-                img { width: 100%; height: 100%; object-fit: cover; }
-                
-                .participants-container {
-                    position: absolute;
-                    top: 40px;
-                    right: 40px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                    z-index: 100;
-                    text-align: right;
+                /* Stagger animation for planks */
+                @keyframes slideInRight {
+                    from { transform: translateX(100px); opacity: 0; }
+                    to { transform: translateX(0) rotate(var(--rotation)); opacity: 1; }
                 }
-                .participant {
-                    background: rgba(255, 255, 255, 0.85);
-                    padding: 8px 16px;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                    backdrop-filter: blur(4px);
-                    animation: slideIn 0.5s ease-out forwards;
-                    opacity: 0;
-                    transform: translateX(20px);
+                .plank-animate {
+                    animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                    opacity: 0; 
                 }
-                .name {
-                    font-size: 18px;
-                    font-weight: 700;
-                    color: #1e293b;
-                }
-                @keyframes slideIn {
-                    to {
-                        opacity: 1;
-                        transform: translateX(0);
-                    }
-                }
-                /* Stagger animation for each participant */
-                ${participants.map((_, i) => `.participant:nth-child(${i + 1}) { animation-delay: ${0.2 + (i * 0.1)}s; }`).join('\n')}
             </style>
         </head>
-        <body onclick="window.close()">
-            <video id="introVideo" src="${videoUrl}" autoplay></video>
-            <div id="mainContent">
-                <img src="${imageUrl}" />
-                <div class="participants-container">
-                    ${participantsHtml}
+        <body class="bg-black h-screen w-screen overflow-hidden relative font-body text-white" onclick="window.close()">
+            <video id="introVideo" src="${videoUrl}" autoplay muted></video>
+            
+            <div id="mainContent" class="relative w-full h-full">
+                <!-- Background Image -->
+                <div class="absolute inset-0 z-0">
+                    <img alt="Pirate ship" class="w-full h-full object-cover opacity-90 transition-opacity duration-500" src="${imageUrl}"/>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none"></div>
                 </div>
+
+                <!-- Main UI Overlay -->
+                <main class="relative z-10 w-full h-full flex justify-end p-6 pointer-events-none">
+                    <div class="absolute top-0 right-10 md:right-32 h-3/5 w-2 flex justify-between pointer-events-none z-0" style="width: 280px;">
+                        <div class="rope-line h-full"></div>
+                        <div class="rope-line h-full"></div>
+                    </div>
+
+                    <div class="flex flex-col items-end w-full md:w-auto mt-4 pointer-events-auto mr-4 md:mr-24 relative z-10">
+                        <!-- Header Plank -->
+                        <div class="plank wood-texture w-80 h-16 mb-6 rounded-sm shadow-wood flex items-center justify-center relative border-y-4 border-[#5D4037]">
+                            <div class="nail absolute top-2 left-2"></div>
+                            <div class="nail absolute top-2 right-2"></div>
+                            <div class="nail absolute bottom-2 left-2"></div>
+                            <div class="nail absolute bottom-2 right-2"></div>
+                            <h2 class="text-2xl font-black text-[#f3e5ab] text-center tracking-tight leading-tight">${restaurantName}</h2>
+                        </div>
+
+                        <!-- Participants List -->
+                        ${Array(6).fill(null).map((_, index) => {
+        const p = participants[index];
+        if (p) {
+            return `
+                                <div class="plank-animate wood-texture w-80 h-20 mb-3 rounded-r-lg rounded-l-md shadow-wood flex items-center px-4 relative border-b-4 border-r-4 border-[#5D4037]" 
+                                     style="--rotation: ${index % 2 === 0 ? '1deg' : '-1deg'}; animation-delay: ${index * 0.15 + 0.5}s;">
+                                    
+                                    <div class="relative w-14 h-14 flex-shrink-0 mr-4">
+                                        <div class="porthole w-full h-full rounded-full overflow-hidden bg-blue-300 relative z-10">
+                                            <img alt="${p.name}" class="w-full h-full object-cover" 
+                                                 src="${p.equipped_item_image_url ? (isDev ? 'http://localhost:3000' + p.equipped_item_image_url : 'file://' + path.join(__dirname, '../build' + p.equipped_item_image_url).replace(/\\/g, '/')) : 'https://cdn-icons-png.flaticon.com/512/4140/4140048.png'}"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex-grow">
+                                        <span class="text-2xl font-black text-white text-shadow-outline tracking-tight truncate block w-48">${p.name}</span>
+                                    </div>
+                                </div>
+                                `;
+        } else {
+            return `
+                                <div class="plank-animate wood-texture w-80 h-20 mb-3 rounded-r-lg rounded-l-md shadow-wood flex items-center px-4 relative border-b-4 border-r-4 border-[#5D4037] opacity-80" 
+                                     style="--rotation: ${index % 2 === 0 ? '1deg' : '-1deg'}; animation-delay: ${index * 0.15 + 0.5}s;">
+                                    <div class="relative w-14 h-14 flex-shrink-0 mr-4 opacity-40">
+                                        <div class="w-full h-full rounded-full border-4 border-dashed border-[#5D4037] bg-black/20 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-[#d4c4a8] text-3xl">person_add</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <span class="text-xl font-bold text-[#d4c4a8] opacity-50 italic">Empty Berth</span>
+                                    </div>
+                                </div>
+                                `;
+        }
+    }).join('')}
+
+                    </div>
+                </main>
             </div>
+
             <script>
                 const video = document.getElementById('introVideo');
                 const mainContent = document.getElementById('mainContent');
@@ -218,18 +325,22 @@ ipcMain.on('show-wallpaper', (event, data) => {
                 video.onended = showMainContent;
                 video.onerror = showMainContent;
 
-                // 비디오 길이가 8초이므로 8초 후 전환 (안전장치 겸용)
+                // 비디오 길이가 8초라고 가정하고 안전장치 실행
                 setTimeout(showMainContent, 8000); 
             </script>
         </body>
         </html>
     `;
     splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
-    splashWindow.once('ready-to-show', () => { splashWindow.show(); splashWindow.focus(); });
+    splashWindow.once('ready-to-show', () => {
+        splashWindow.show();
+        splashWindow.setAlwaysOnTop(true, 'screen-saver'); // 다른 창보다 무조건 위에 뜨도록 설정
+        splashWindow.focus();
+    });
     splashWindow.on('closed', () => { splashWindow = null; });
 });
 
-// ✅ 새 해적선 알림 (우측 하단 슬라이드 업)
+// 새 해적선 알림 (우측 하단 슬라이드 업)
 ipcMain.on('show-notification', (event, data) => {
     const { screen } = require('electron');
     const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;

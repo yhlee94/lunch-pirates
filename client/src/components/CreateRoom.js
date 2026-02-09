@@ -62,7 +62,7 @@ function CreateRoom({ user }) {
             console.error('Kakao map not loaded');
         }
 
-        // ✅ 승선 중인지 사전에 체크 (요청 낭비 방지)
+        // 승선 중인지 사전에 체크 (요청 낭비 방지)
         const checkParticipation = async () => {
             try {
                 const token = sessionStorage.getItem('token');

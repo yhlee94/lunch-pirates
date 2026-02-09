@@ -67,6 +67,7 @@
     "electronVersion": "40.0.0",
     "win": {
       "target": "portable",
+      "icon": "public/assets/Common/system.ico",
       "sign": false,
       "verifyUpdateCodeSignature": false,
       "signingHashAlgorithms": []

@@ -51,7 +51,7 @@ function RoomLobby({ user }) {
             setIsSubmitting(true);
             const token = sessionStorage.getItem('token');
 
-            // ✅ 먼저 다른 방에 승선 중인지 체크 (요청 낭비 및 400 에러 방지)
+            // 먼저 다른 방에 승선 중인지 체크 (요청 낭비 및 400 에러 방지)
             const checkRes = await axios.get(`${API_BASE_URL}/api/rooms`, {
                 headers: { Authorization: `Bearer ${token}` }
             });

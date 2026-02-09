@@ -40,7 +40,7 @@ function App() {
     setUser(null);
   };
 
-  // ✅ [전역] 자원 절약형 출항 알람 감시 (30분 단위 체크)
+  //  [전역] 자원 절약형 출항 알람 감시 (30분 단위 체크)
   useEffect(() => {
     const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
     if (!isElectron || !user) return;
@@ -71,7 +71,7 @@ function App() {
               const dep = new Date(r.departure_time);
               const isMatch = dep.getHours() === now.getHours() && dep.getMinutes() === now.getMinutes();
               if (isMatch) {
-                console.log(`✅ [매칭성공] ${r.restaurant_name} - 출발시간: ${r.departure_time}`);
+                console.log(`[매칭성공] ${r.restaurant_name} - 출발시간: ${r.departure_time}`);
               }
               return isMatch;
             });
@@ -81,7 +81,8 @@ function App() {
               try {
                 const { ipcRenderer } = window.require('electron');
                 ipcRenderer.send('show-wallpaper', {
-                  participants: isDeparting.participants
+                  participants: isDeparting.participants,
+                  restaurant_name: isDeparting.restaurant_name
                 });
               } catch (e) {
                 console.error('IPC 전송 실패:', e);
@@ -102,13 +103,13 @@ function App() {
     return () => clearInterval(interval);
   }, [user]);
 
-  // ✅ [전역] 새 해적선 알림 감시
+  // [전역] 새 해적선 알림 감시
   useEffect(() => {
     const socket = io(API_BASE_URL);
     const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
 
     socket.on('new_room_created', (data) => {
-      console.log('📢 새로운 해적선 포착:', data);
+      console.log('새로운 해적선 포착:', data);
       if (isElectron) {
         try {
           const { ipcRenderer } = window.require('electron');

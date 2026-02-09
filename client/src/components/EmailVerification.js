@@ -70,7 +70,7 @@ function EmailVerification() {
 
                 {status === 'success' && (
                     <>
-                        <div style={{ fontSize: '48px', marginBottom: '20px' }}>✅</div>
+                        <div style={{ fontSize: '48px', marginBottom: '20px' }}></div>
                         <h2 style={{ color: '#4CAF50' }}>{message}</h2>
                         <p style={{ color: '#666', marginTop: '10px' }}>
                             잠시 후 로그인 페이지로 이동합니다...

@@ -30,7 +30,7 @@ const searchCompany = async (req, res) => {
             }
         );
 
-        console.log('✅ 카카오 API 응답:', response.data.documents.length, '개');
+        console.log(' 카카오 API 응답:', response.data.documents.length, '개');
 
         res.json({
             success: true,
@@ -38,7 +38,7 @@ const searchCompany = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ 회사 검색 오류:', error.response?.data || error.message);
+        console.error('회사 검색 오류:', error.response?.data || error.message);
         res.status(500).json({
             success: false,
             message: '회사 검색에 실패했습니다'
