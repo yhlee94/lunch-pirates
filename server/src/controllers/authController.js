@@ -121,12 +121,14 @@ const register = async (req, res) => {
 
         console.log('사용자 생성 완료:', result.rows[0].email);
 
-        // 10. 이메일 인증 링크 발송
-        await sendVerificationEmail(email, verificationToken);
+        // 이메일 발송을 백그라운드에서 진행 (서버 응답을 멈추지 않게 함)
+        sendVerificationEmail(email, verificationToken).catch(err => {
+            console.error('❌ 배포 환경 이메일 발송 실패 (백그라운드):', err.message);
+        });
 
         res.status(201).json({
             success: true,
-            message: '회원가입 성공! 이메일을 확인해주세요',
+            message: '회원가입 성공! 인증 메일을 확인해주세요',
             user: result.rows[0]
         });
 
@@ -270,7 +272,7 @@ const login = async (req, res) => {
                 company_id: user.company_id,
                 companyLatitude: user.company_latitude,
                 companyLongitude: user.company_longitude,
-                ticket_count : user.ticket_count
+                ticket_count: user.ticket_count
             }
         });
 
