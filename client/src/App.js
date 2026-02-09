@@ -80,7 +80,9 @@ function App() {
               console.log(`⛵ [출항] ${isDeparting.restaurant_name} 호, 지금 출항합니다!`);
               try {
                 const { ipcRenderer } = window.require('electron');
-                ipcRenderer.send('show-wallpaper');
+                ipcRenderer.send('show-wallpaper', {
+                  participants: isDeparting.participants
+                });
               } catch (e) {
                 console.error('IPC 전송 실패:', e);
               }

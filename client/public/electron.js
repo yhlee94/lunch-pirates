@@ -114,13 +114,16 @@ function createWindow() {
 }
 
 // ✅ 출항 알림 전체 화면 팝업
-ipcMain.on('show-wallpaper', (event) => {
-    // ... 기존 코드 유지 (생략 가능하나 가독성을 위해 전체 교체됨)
+ipcMain.on('show-wallpaper', (event, data) => {
     console.log('📢 [Main] 출항 신호 수신됨! 전체화면 팝업 생성...');
 
     const imageUrl = isDev
         ? 'http://localhost:3000/assets/Common/wallpaper.png'
         : `file://${path.join(__dirname, '../build/assets/Common/wallpaper.png')}`.replace(/\\/g, '/');
+
+    const videoUrl = isDev
+        ? 'http://localhost:3000/assets/Common/ready.mp4'
+        : `file://${path.join(__dirname, '../build/assets/Common/ready.mp4')}`.replace(/\\/g, '/');
 
     let splashWindow = new BrowserWindow({
         width: 1920, height: 1080, fullscreen: true, frame: false,
@@ -128,19 +131,98 @@ ipcMain.on('show-wallpaper', (event) => {
         webPreferences: { nodeIntegration: true, contextIsolation: false, webSecurity: false }
     });
 
+    const participants = (data && data.participants) ? data.participants : [];
+
+    const participantsHtml = participants.map(p => `
+        <div class="participant">
+            <span class="name">${p.name}</span>
+        </div>
+    `).join('');
+
     const htmlContent = `
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <style>
-                body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: black; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-                img { width: 100%; height: 100%; object-fit: cover; animation: fadeIn 1.2s ease-in; }
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+                body { 
+                    margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; 
+                    background-color: black; display: flex; align-items: center; justify-content: center; 
+                    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+                }
+                #introVideo {
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                    object-fit: cover; z-index: 200; background: black;
+                }
+                #mainContent {
+                    opacity: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+                    transition: opacity 1s ease-in;
+                }
+                img { width: 100%; height: 100%; object-fit: cover; }
+                
+                .participants-container {
+                    position: absolute;
+                    top: 40px;
+                    right: 40px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    z-index: 100;
+                    text-align: right;
+                }
+                .participant {
+                    background: rgba(255, 255, 255, 0.85);
+                    padding: 8px 16px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    backdrop-filter: blur(4px);
+                    animation: slideIn 0.5s ease-out forwards;
+                    opacity: 0;
+                    transform: translateX(20px);
+                }
+                .name {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #1e293b;
+                }
+                @keyframes slideIn {
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                /* Stagger animation for each participant */
+                ${participants.map((_, i) => `.participant:nth-child(${i + 1}) { animation-delay: ${0.2 + (i * 0.1)}s; }`).join('\n')}
             </style>
         </head>
-        <body onclick="window.close()"><img src="${imageUrl}" /></body>
-        </html>1
+        <body onclick="window.close()">
+            <video id="introVideo" src="${videoUrl}" autoplay></video>
+            <div id="mainContent">
+                <img src="${imageUrl}" />
+                <div class="participants-container">
+                    ${participantsHtml}
+                </div>
+            </div>
+            <script>
+                const video = document.getElementById('introVideo');
+                const mainContent = document.getElementById('mainContent');
+                
+                function showMainContent() {
+                    video.style.transition = 'opacity 0.5s';
+                    video.style.opacity = '0';
+                    setTimeout(() => { video.style.display = 'none'; }, 500);
+                    mainContent.style.opacity = '1';
+                }
+
+                video.onended = showMainContent;
+                video.onerror = showMainContent;
+
+                // 비디오 길이가 8초이므로 8초 후 전환 (안전장치 겸용)
+                setTimeout(showMainContent, 8000); 
+            </script>
+        </body>
+        </html>
     `;
     splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
     splashWindow.once('ready-to-show', () => { splashWindow.show(); splashWindow.focus(); });
