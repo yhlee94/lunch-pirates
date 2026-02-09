@@ -1,14 +1,14 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const path = require('path');
 
-// ✅ 보안 경고 무시 (개발 중 콘솔을 깔끔하게 유지하기 위함)
+// 보안 경고 무시 (개발 중 콘솔을 깔끔하게 유지하기 위함)
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 let mainWindow;
 let tray;
 app.isQuitting = false; // 종료 플래그 초기화
 
-// ✅ app.isPackaged 사용: 빌드된 앱인지 확실하게 감지
+// app.isPackaged 사용: 빌드된 앱인지 확실하게 감지
 const isDev = !app.isPackaged;
 
 function createWindow() {
@@ -33,7 +33,7 @@ function createWindow() {
         },
     });
 
-    // ✅ 개발: localhost:3000, 배포: 빌드된 파일 로드
+    // 개발: localhost:3000, 배포: 빌드된 파일 로드
     const startUrl = isDev
         ? 'http://localhost:3000'
         : `file://${path.join(__dirname, '../build/index.html')}`;
@@ -43,13 +43,13 @@ function createWindow() {
 
     mainWindow.loadURL(startUrl);
 
-    // ✅ 개발 환경에서만 개발자 도구 자동 열기
+    // 개발 환경에서만 개발자 도구 자동 열기
     if (isDev) {
         mainWindow.webContents.openDevTools();
     }
 
 
-    // ✅ 커스텀 메뉴 설정 (필요한 것만)
+    // 커스텀 메뉴 설정 (필요한 것만)
     const menuTemplate = [
         {
             label: '파일',
@@ -113,9 +113,9 @@ function createWindow() {
     });
 }
 
-// ✅ 출항 알림 전체 화면 팝업
+// 출항 알림 전체 화면 팝업
 ipcMain.on('show-wallpaper', (event, data) => {
-    console.log('📢 [Main] 출항 신호 수신됨! 전체화면 팝업 생성...');
+    console.log(' [Main] 출항 신호 수신됨! 전체화면 팝업 생성...');
 
     const imageUrl = isDev
         ? 'http://localhost:3000/assets/Common/wallpaper.png'
@@ -229,7 +229,7 @@ ipcMain.on('show-wallpaper', (event, data) => {
     splashWindow.on('closed', () => { splashWindow = null; });
 });
 
-// ✅ 새 해적선 알림 (우측 하단 슬라이드 업)
+// 새 해적선 알림 (우측 하단 슬라이드 업)
 ipcMain.on('show-notification', (event, data) => {
     const { screen } = require('electron');
     const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;

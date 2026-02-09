@@ -23,7 +23,7 @@ const io = socketIo(server, {
     }
 });
 
-app.set('io', io); // ✅ Make io accessible in controllers
+app.set('io', io); //  Make io accessible in controllers
 
 // Middleware
 app.use(cors({

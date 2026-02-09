@@ -7,6 +7,7 @@ import { useAlert } from '../contexts/AlertContext';
 function MyRoom({ user, onBack }) {
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState(null);
     const [equipping, setEquipping] = useState(false);
@@ -36,6 +37,7 @@ function MyRoom({ user, onBack }) {
             if (response.data.success) {
                 const newItems = response.data.items;
                 setItems(newItems);
+                setTotalItems(response.data.totalItemCount || 0);
 
                 // If an item is already selected, update it with the new data (to reflect equipped status etc)
                 // Otherwise, select the equipped item by default
@@ -142,7 +144,7 @@ function MyRoom({ user, onBack }) {
                     <span className="material-icons-round text-amber-400 text-sm">inventory_2</span>
                     <div className="flex flex-col items-center leading-none">
                         <span className="text-[10px] text-slate-400 uppercase font-bold">보유 아이템</span>
-                        <span className="text-sm font-bold">{items.length}</span>
+                        <span className="text-sm font-bold">{items.length} / {totalItems}</span>
                     </div>
                 </div>
             </header>

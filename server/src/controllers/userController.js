@@ -19,6 +19,10 @@ exports.getUserItems = async (req, res) => {
             [userId]
         );
 
+        // 3. 전체 아이템 개수 조회
+        const totalItemsResult = await pool.query('SELECT COUNT(*) FROM items');
+        const totalItemCount = parseInt(totalItemsResult.rows[0].count, 10);
+
         // 3. JS에서 비교 수행 (타입 안전성 확보)
         const items = result.rows.map(item => ({
             ...item,
@@ -27,7 +31,8 @@ exports.getUserItems = async (req, res) => {
 
         res.json({
             success: true,
-            items: items
+            items: items,
+            totalItemCount: totalItemCount
         });
     } catch (error) {
         console.error('사용자 아이템 조회 에러:', error);

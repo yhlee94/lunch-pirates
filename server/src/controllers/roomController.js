@@ -76,7 +76,7 @@ exports.createRoom = async (req, res) => {
             }
         });
 
-        // ✅ 실시간 방 목록 갱신 및 새 방 알림 전송
+        // 실시간 방 목록 갱신 및 새 방 알림 전송
         const io = req.app.get('io');
         if (io) {
             io.emit('refresh_room_list');
@@ -352,7 +352,7 @@ exports.joinRoom = async (req, res) => {
         await client.query('COMMIT');
         res.json({ success: true, message: '승선에 성공했습니다! 🏴‍☠️' });
 
-        // ✅ 실시간 방 목록 갱신 알림
+        // 실시간 방 목록 갱신 알림
         const io = req.app.get('io');
         if (io) {
             io.emit('refresh_room_list');
@@ -389,7 +389,7 @@ exports.leaveRoom = async (req, res) => {
 
         res.json({ success: true, message: '무사히 하선했습니다. 👋' });
 
-        // ✅ 실시간 방 목록 갱신 알림
+        // 실시간 방 목록 갱신 알림
         const io = req.app.get('io');
         if (io) {
             io.emit('refresh_room_list');
@@ -448,7 +448,7 @@ exports.deleteRoom = async (req, res) => {
         await client.query('COMMIT');
         res.json({ success: true, message: '항해가 취소되었습니다. 🌊' });
 
-        // ✅ 실시간 방 목록 갱신 알림
+        // 실시간 방 목록 갱신 알림
         const io = req.app.get('io');
         if (io) {
             io.emit('refresh_room_list');

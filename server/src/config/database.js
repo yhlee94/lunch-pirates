@@ -10,7 +10,7 @@ const pool = new Pool({
 
 // 연결 테스트
 pool.on('connect', () => {
-    console.log('✅ PostgreSQL 연결 성공!');
+    console.log(' PostgreSQL 연결 성공!');
 });
 
 pool.on('error', (err) => {
