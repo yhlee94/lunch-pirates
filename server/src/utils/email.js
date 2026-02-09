@@ -4,13 +4,13 @@ const nodemailer = require('nodemailer');
 // Gmail SMTP 설정
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
   },
-  connectionTimeout: 10000, // 10초 타임아웃
+  connectionTimeout: 10000,
   greetingTimeout: 10000,
   socketTimeout: 10000,
   tls: {
@@ -20,8 +20,8 @@ const transporter = nodemailer.createTransport({
 
 // 이메일 인증 링크 발송
 const sendVerificationEmail = async (email, token) => {
-  // FRONTEND_URL이 서버 주소일 경우를 대비해 직접 API 경로를 연결합니다.
-  const baseUrl = process.env.BACKEND_URL || process.env.FRONTEND_URL || 'http://localhost:5000';
+  // 이메일 인증은 서버에서 직접 처리하므로 BACKEND_URL을 기반으로 링크를 만듭니다.
+  const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
   const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
   const mailOptions = {
