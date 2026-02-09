@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function RoomLobby({ user }) {
     const { roomId } = useParams();
@@ -11,11 +12,12 @@ function RoomLobby({ user }) {
     const [room, setRoom] = useState(location.state?.room || null);
     const [loading, setLoading] = useState(!room);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showAlert, showConfirm } = useAlert();
 
     const fetchRoomData = async (silent = false) => {
         try {
             if (!silent && !room) setLoading(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -24,13 +26,13 @@ function RoomLobby({ user }) {
                 if (foundRoom) {
                     setRoom(foundRoom);
                 } else {
-                    alert('방을 찾을 수 없습니다.');
+                    showAlert('방을 찾을 수 없습니다.', 'error');
                     navigate('/');
                 }
             }
         } catch (error) {
             console.error('Failed to fetch room:', error);
-            alert('방 정보를 불러오는데 실패했습니다.');
+            showAlert('방 정보를 불러오는데 실패했습니다.', 'error');
             navigate('/');
         } finally {
             setLoading(false);
@@ -47,7 +49,22 @@ function RoomLobby({ user }) {
     const handleJoin = async () => {
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
+
+            // ✅ 먼저 다른 방에 승선 중인지 체크 (요청 낭비 및 400 에러 방지)
+            const checkRes = await axios.get(`${API_BASE_URL}/api/rooms`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (checkRes.data.success) {
+                const myRoom = checkRes.data.rooms.find(r => r.is_participant);
+                if (myRoom && myRoom.id !== room.id) {
+                    showAlert(`이미 [${myRoom.restaurant_name}] 해적선에 승선 중입니다! 먼저 하선해주세요.`, 'error');
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/join`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -55,7 +72,8 @@ function RoomLobby({ user }) {
                 await fetchRoomData(true); // Re-fetch data silently to show updated participants and status
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error joining room');
+            const message = error.response?.data?.message || 'Error joining room';
+            showAlert(message, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -64,7 +82,7 @@ function RoomLobby({ user }) {
     const handleLeave = async () => {
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.post(`${API_BASE_URL}/api/rooms/${room.id}/leave`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -73,29 +91,33 @@ function RoomLobby({ user }) {
                 await fetchRoomData(true);
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Error leaving room');
+            showAlert(error.response?.data?.message || 'Error leaving room', 'error');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Really cancel this voyage?')) return;
-        try {
-            setIsSubmitting(true);
-            const token = localStorage.getItem('token');
-            const response = await axios.delete(`${API_BASE_URL}/api/rooms/${room.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response.data.success) {
-                navigate('/');
+        showConfirm('정말로 향해를 삭제하시겠습니까?', async () => {
+            try {
+                setIsSubmitting(true);
+                const token = sessionStorage.getItem('token');
+                const response = await axios.delete(`${API_BASE_URL}/api/rooms/${room.id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (response.data.success) {
+                    navigate('/');
+                }
+            } catch (error) {
+                showAlert(error.response?.data?.message || 'Error deleting room', 'error');
+            } finally {
+                setIsSubmitting(false);
             }
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error deleting room');
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
+
+    const isCreator = user?.id === room?.creator?.id; // Check creator
+    const isParticipant = room?.is_participant; // Check if joined
 
     if (loading || !room) {
         return (
@@ -104,9 +126,6 @@ function RoomLobby({ user }) {
             </div>
         );
     }
-
-    const isCreator = user?.id === room.creator?.id; // Check creator
-    const isParticipant = room.is_participant; // Check if joined
 
     // Formatting
     const formattedTime = new Date(room.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -148,16 +167,13 @@ function RoomLobby({ user }) {
                     100% { transform: translateX(0); }
                 }
                 .wave-bg {
-                    background: url("/assets/Common/wave.png");
+                    background: url("${process.env.PUBLIC_URL}/assets/Common/wave.png");
                     background-position: 0 bottom;
                     background-repeat: repeat-x;
                     background-size: 50% 100%;
                 }
                 .cloud-anim {
                     animation: float 8s ease-in-out infinite;
-                }
-                body {
-                    min-height: max(884px, 100dvh);
                 }
             `}</style>
 
@@ -173,7 +189,7 @@ function RoomLobby({ user }) {
                 <div className="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-[40%] w-[180%] h-[70%] z-20 pointer-events-none flex items-center justify-center">
                     <div className="relative w-full h-full animate-[sway_6s_ease-in-out_infinite]">
                         <img
-                            src="/assets/Common/ship.png"
+                            src={process.env.PUBLIC_URL + "/assets/Common/ship.png"}
                             alt="Pirate Ship"
                             className="w-full h-full object-contain drop-shadow-[0_30px_50px_rgba(0,0,0,0.4)]"
                         />

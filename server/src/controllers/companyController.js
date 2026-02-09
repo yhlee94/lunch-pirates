@@ -53,11 +53,12 @@ const getCompanyRankings = async (req, res) => {
     try {
         console.log(`🏆 랭킹 조회 요청: Company ID ${companyId}`);
 
-        // 최근 30일간의 데이터 조회
+        // 최근 30일간의 데이터 조회 (participants_count 합산)
         const query = `
             SELECT 
-                restaurant_name, 
-                COUNT(*) as visit_count,
+                MAX(restaurant_name) as restaurant_name,
+                kakao_place_id,
+                SUM(participants_count) as visit_count,
                 MAX(restaurant_address) as restaurant_address
             FROM 
                 lunch_rooms 
@@ -65,8 +66,10 @@ const getCompanyRankings = async (req, res) => {
                 company_id = $1 
                 AND departure_time >= NOW() - INTERVAL '30 days'
                 AND departure_time <= NOW()
+                AND status = 'departed'
             GROUP BY 
-                restaurant_name
+                kakao_place_id, 
+                CASE WHEN kakao_place_id IS NULL THEN restaurant_name ELSE NULL END
             ORDER BY 
                 visit_count DESC
             LIMIT 10

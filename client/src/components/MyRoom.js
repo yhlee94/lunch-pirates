@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function MyRoom({ user, onBack }) {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ function MyRoom({ user, onBack }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [equipping, setEquipping] = useState(false);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = High to Low, 'asc' = Low to High
+    const { showAlert } = useAlert();
 
     const rarityWeights = {
         'Mythic': 5,
@@ -27,7 +29,7 @@ function MyRoom({ user, onBack }) {
 
     const fetchItems = useCallback(async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.get(`${API_BASE_URL}/api/users/items`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -61,7 +63,7 @@ function MyRoom({ user, onBack }) {
         if (equipping) return;
         try {
             setEquipping(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await axios.post(`${API_BASE_URL}/api/users/equip`, { itemId }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -70,7 +72,7 @@ function MyRoom({ user, onBack }) {
                 await fetchItems();
             }
         } catch (error) {
-            alert(error.response?.data?.message || '장착 중 오류가 발생했습니다.');
+            showAlert(error.response?.data?.message || '장착 중 오류가 발생했습니다.', 'error');
         } finally {
             setEquipping(false);
         }
@@ -159,7 +161,7 @@ function MyRoom({ user, onBack }) {
                                             key={selectedItem.image_url} // Add key to force proper re-render without glitch if needed, or remove if causing it. Let's try removing smooth transition.
                                             alt={selectedItem.name}
                                             className="w-full h-full object-contain rounded-3xl drop-shadow-xl mask-image-gradient"
-                                            src={selectedItem.image_url}
+                                            src={`${process.env.PUBLIC_URL}${selectedItem.image_url}`}
                                         />
                                         <div className="absolute top-0 right-0 w-3 h-3 bg-blue-400 rounded-full blur-[2px] opacity-60 animate-bounce"></div>
                                         <div className="absolute bottom-10 left-4 w-2 h-2 bg-purple-400 rounded-full blur-[1px] opacity-50 animate-pulse"></div>
@@ -235,7 +237,7 @@ function MyRoom({ user, onBack }) {
                                         <img
                                             alt={item.name}
                                             className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 z-10`}
-                                            src={item.image_url}
+                                            src={`${process.env.PUBLIC_URL}${item.image_url}`}
                                         />
                                     </div>
 
@@ -256,25 +258,28 @@ function MyRoom({ user, onBack }) {
                 </section>
             </main>
 
-            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-[#1e293b] dark:bg-slate-800 text-white rounded-full p-2 shadow-2xl flex items-center justify-around z-50 backdrop-blur-lg bg-opacity-90 border border-slate-700 max-w-[400px]">
+            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-[#1e293b] text-white rounded-full p-2 shadow-2xl flex items-center justify-around z-50 backdrop-blur-lg bg-opacity-90 border border-slate-700 max-w-[400px]">
                 <button
                     onClick={() => navigate('/')}
                     className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                    <span className="material-icons-round">home</span>
+                    <span className="material-symbols-outlined text-[24px]">home</span>
                 </button>
                 <button
                     onClick={() => navigate('/rankings')}
                     className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                    <span className="material-icons-round">emoji_events</span>
+                    <span className="material-symbols-outlined text-[24px]">emoji_events</span>
+                </button>
+                <button
+                    onClick={() => navigate('/gacha')}
+                    className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                    <span className="material-symbols-outlined text-[24px]">local_activity</span>
                 </button>
                 <button className="p-3 rounded-full text-primary bg-white/10 relative">
-                    <span className="material-icons-round">face</span>
+                    <span className="material-symbols-outlined text-[24px] text-[#2b8cee] fill-current" style={{ fontVariationSettings: "'FILL' 1" }}>face</span>
                     <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-slate-800"></span>
-                </button>
-                <button className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                    <span className="material-icons-round">settings</span>
                 </button>
             </nav>
             <div className="fixed bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white dark:from-[#0f172a] to-transparent pointer-events-none z-40"></div>

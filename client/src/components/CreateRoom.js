@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
+import { useAlert } from '../contexts/AlertContext';
 
 function CreateRoom({ user }) {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ function CreateRoom({ user }) {
     const [places, setPlaces] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const { showAlert } = useAlert();
     const [mapInstance, setMapInstance] = useState(null);
     const markersRef = useRef([]);
 
@@ -47,6 +49,8 @@ function CreateRoom({ user }) {
         return target < now;
     };
 
+    const [isAlreadyInRoom, setIsAlreadyInRoom] = useState(null); // 참여 중인 방 정보 저장
+
     // Initialize Map
     useEffect(() => {
         if (window.kakao && window.kakao.maps) {
@@ -57,6 +61,26 @@ function CreateRoom({ user }) {
         } else {
             console.error('Kakao map not loaded');
         }
+
+        // ✅ 승선 중인지 사전에 체크 (요청 낭비 방지)
+        const checkParticipation = async () => {
+            try {
+                const token = sessionStorage.getItem('token');
+                const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (response.data.success) {
+                    const myRoom = response.data.rooms.find(r => r.is_participant);
+                    if (myRoom) {
+                        setIsAlreadyInRoom(myRoom.restaurant_name);
+                        showAlert(`이미 [${myRoom.restaurant_name}]에 승선 중입니다. 새 방을 만들려면 먼저 하선해주세요!`, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('참여 여부 체크 실패:', error);
+            }
+        };
+        checkParticipation();
     }, []);
 
     const initializeMap = () => {
@@ -149,9 +173,9 @@ function CreateRoom({ user }) {
                     mapInstance.panTo(moveLatLng);
                 }
             } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
-                alert('검색 결과가 존재하지 않습니다.');
+                showAlert('검색 결과가 존재하지 않습니다.', 'info');
             } else if (status === window.kakao.maps.services.Status.ERROR) {
-                alert('검색 중 오류가 발생했습니다.');
+                showAlert('검색 중 오류가 발생했습니다.', 'error');
             }
         }, { category_group_code: 'FD6' }); // Optional: restrict to food/restaurants
     };
@@ -176,25 +200,30 @@ function CreateRoom({ user }) {
 
 
     const handleSubmit = async () => {
+        if (isAlreadyInRoom) {
+            showAlert(`이미 [${isAlreadyInRoom}] 해적선에 승선 중입니다! 먼저 하선해주세요.`, 'error');
+            return;
+        }
+
         if (!selectedPlace) {
-            alert('식당을 선택해주세요!');
+            showAlert('식당을 선택해주세요!', 'error');
             return;
         }
 
         if (!departureTime) {
-            alert('출발 시간을 선택해주세요!');
+            showAlert('출발 시간을 선택해주세요!', 'error');
             return;
         }
 
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const departure = new Date();
             const [hours, minutes] = departureTime.split(':');
             departure.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
             if (departure < new Date()) {
-                alert('이미 지나간 시간으로는 방을 만들 수 없습니다!');
+                showAlert('이미 지나간 시간으로는 방을 만들 수 없습니다!', 'error');
                 setIsSubmitting(false);
                 return;
             }
@@ -215,7 +244,8 @@ function CreateRoom({ user }) {
                     latitude: parseFloat(selectedPlace.latitude),
                     longitude: parseFloat(selectedPlace.longitude),
                     max_participants: maxParticipants,
-                    departure_time: localDepartureTime
+                    departure_time: localDepartureTime,
+                    kakao_place_id: selectedPlace.id
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -223,12 +253,13 @@ function CreateRoom({ user }) {
             );
 
             if (response.data.success) {
-                alert(`"${selectedPlace.name} 출항해요!" 방이 생성되었습니다! 🏴‍☠️`);
+                showAlert(`"${selectedPlace.name} 출항해요!" 방이 생성되었습니다!`, 'info');
                 navigate('/'); // Redirect to home/list
             }
         } catch (error) {
-            alert('방 생성에 실패했습니다. 다시 시도해주세요.');
-            console.error(error);
+            const message = error.response?.data?.message || '방 생성에 실패했습니다. 다시 시도해주세요.';
+            showAlert(message, 'error');
+            console.error('방 생성 에러:', error);
         } finally {
             setIsSubmitting(false);
         }

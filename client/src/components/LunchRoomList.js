@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import io from 'socket.io-client'; // Socket.io import
 import RoomCard from './RoomCard';
 import API_BASE_URL from '../apiConfig';
 
@@ -19,10 +20,12 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
     const scrollRef = useRef(null);
 
     // 방 목록 불러오기
-    const fetchRooms = async () => {
+    const fetchRooms = useCallback(async () => {
         try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
+            // 로딩 스피너는 최초 로딩 시에만 혹은 필요 시에만 보여주는게 UX상 좋을 수 있음
+            // 실시간 갱신 때는 로딩 없이 조용히 갱신
+            // setLoading(true); 
+            const token = sessionStorage.getItem('token');
             const response = await axios.get(`${API_BASE_URL}/api/rooms`, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -47,15 +50,32 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
             }
         } catch (error) {
             console.error('방 목록 조회 실패:', error);
-            alert('방 목록을 불러오는데 실패했습니다.');
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [selectedRoom]);
 
+    // 초기 로딩
     useEffect(() => {
-        fetchRooms();
-    }, []);
+        setLoading(true);
+        fetchRooms().finally(() => setLoading(false));
+    }, []); // 최초 1회만 실행
+
+    // 소켓 연결 및 실시간 갱신
+    useEffect(() => {
+        const socket = io(API_BASE_URL);
+
+        socket.on('connect', () => {
+            console.log('Socket connected for room list updates');
+        });
+
+        socket.on('refresh_room_list', () => {
+            console.log('🔔 실시간 방 목록 갱신 감지!');
+            fetchRooms();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [fetchRooms]);
 
 
 
@@ -69,7 +89,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
     const emptySlots = Math.max(0, roomsPerPage - currentRooms.length);
 
     return (
-        <div className="h-full bg-surface-light text-slate-800 font-sans antialiased selection:bg-primary selection:text-white overflow-hidden relative">
+        <div className="h-full bg-surface-light text-slate-800 font-sans antialiased selection:bg-primary selection:text-white overflow-y-auto relative custom-scrollbar">
             {/* Background Blobs */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-primary/20 rounded-full blur-[100px]"></div>
@@ -77,7 +97,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                 <div className="absolute bottom-[0%] left-[20%] w-[50%] h-[50%] bg-accent-green/30 rounded-full blur-[80px]"></div>
             </div>
 
-            <div className="relative z-10 max-w-md mx-auto h-screen flex flex-col px-6 pt-6 pb-8">
+            <div className="relative z-10 max-w-md mx-auto min-h-[700px] h-full flex flex-col px-6 pt-6 pb-8">
                 {/* Welcome Card Section */}
                 <div className="grid grid-cols-6 grid-rows-2 gap-3 mb-8 h-auto shrink-0">
                     <div className="col-span-6 row-span-2 glass-morphism rounded-[2rem] p-6 relative overflow-hidden shadow-glass group">
@@ -94,7 +114,7 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                             </div>
                         </div>
                         <div className="absolute -right-2 top-[23%] -translate-y-1/2 w-56 h-56 animate-float z-0">
-                            <img alt="3D Food" className="w-full h-full object-contain drop-shadow-2xl opacity-90" src={`/assets/RoomList/${randomImageIndex}.png`} style={{ transform: 'scale(1.2)' }} />
+                            <img alt="3D Food" className="w-full h-full object-contain drop-shadow-2xl opacity-90" src={process.env.PUBLIC_URL + `/assets/RoomList/${randomImageIndex}.png`} style={{ transform: 'scale(1.2)' }} />
                         </div>
                     </div>
                 </div>
@@ -108,7 +128,10 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                         <span className="material-symbols-rounded text-yellow-500 text-2xl">trophy</span>
                         <span className="text-xs font-bold text-slate-600">맛집 랭킹</span>
                     </button>
-                    <button className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80">
+                    <button
+                        onClick={() => navigate('/gacha')}
+                        className="glass-morphism rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform duration-200 hover:bg-white/80"
+                    >
                         <span className="material-symbols-rounded text-rose-400 text-2xl">local_activity</span>
                         <span className="text-xs font-bold text-slate-600">티켓</span>
                     </button>
@@ -122,29 +145,34 @@ function LunchRoomList({ user, onNavigateToMyRoom }) {
                 </div>
 
                 {/* Room List Section */}
-                <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 flex flex-col min-h-[380px]">
                     <div className="flex justify-between items-end mb-4 px-1">
-                        <h2 className="text-xl font-bold text-slate-800">모집 중인 모임</h2>
-                        <span className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors cursor-pointer">전체보기</span>
+                        <h2 className="text-2xl font-bold text-slate-800 mt-8">출항 대기 해적선</h2>
+                        <span
+                            onClick={() => navigate('/all-rooms')}
+                            className="text-sm font-semibold text-primary/80 hover:text-primary transition-colors cursor-pointer"
+                        >
+                            전체보기
+                        </span>
                     </div>
 
                     <div
                         ref={scrollRef}
-                        className="overflow-x-auto hide-scrollbar pb-6 -mx-6 px-6 flex items-center space-x-5 h-full"
+                        className="overflow-x-auto hide-scrollbar flex items-center space-x-5 pt-2 pb-12 -mx-6 px-6"
                     >
                         {loading ? (
                             <div className="w-full flex justify-center items-center">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                             </div>
                         ) : rooms.length === 0 ? (
-                            <div className="w-full flex justify-center items-center text-slate-500 font-bold">
+                            <div className="w-full flex justify-center items-center text-slate-500 font-bold pt-24 pb-10">
                                 현재 모집 중인 방이 없습니다.
                             </div>
                         ) : (
                             rooms.map(room => (
                                 <div
                                     key={room.id}
-                                    className="pointer-events-auto shrink-0 w-[75%] h-[90%]"
+                                    className="pointer-events-auto shrink-0 w-[90%] h-auto aspect-[4/3]"
                                     onClick={(e) => {
                                         e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                                     }}

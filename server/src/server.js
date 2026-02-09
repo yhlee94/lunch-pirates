@@ -8,6 +8,8 @@ const authRoutes = require('./routes/authRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const userRoutes = require('./routes/userRoutes');
+const commentRoutes = require('./routes/commentRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
 
 
 
@@ -21,6 +23,8 @@ const io = socketIo(server, {
     }
 });
 
+app.set('io', io); // ✅ Make io accessible in controllers
+
 // Middleware
 app.use(cors({
     origin: '*', // 모든 출처 허용 (보안이 중요하다면 추후 특정 도메인으로 제한 필요)
@@ -31,6 +35,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -49,6 +55,7 @@ io.on('connection', (socket) => {
 const roomController = require('./controllers/roomController');
 
 const PORT = process.env.PORT || 5000;
+
 server.listen(PORT, () => {
     console.log(`서버 실행 중: http://localhost:${PORT}`);
 });
