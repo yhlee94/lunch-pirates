@@ -3,22 +3,32 @@ const nodemailer = require('nodemailer');
 
 // Gmail SMTP 설정
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
+  },
+  connectionTimeout: 10000, // 10초 타임아웃
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 // 이메일 인증 링크 발송
 const sendVerificationEmail = async (email, token) => {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  // FRONTEND_URL이 서버 주소일 경우를 대비해 직접 API 경로를 연결합니다.
+  const baseUrl = process.env.BACKEND_URL || process.env.FRONTEND_URL || 'http://localhost:5000';
+  const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
-    const mailOptions = {
-        from: `"점심 해적단" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: '점심 해적단 이메일 인증',
-        html: `
+  const mailOptions = {
+    from: `"점심 해적단" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: '점심 해적단 이메일 인증',
+    html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #333;">환영합니다, 해적님! ⚓</h1>
         <p style="font-size: 16px; color: #666;">
@@ -37,26 +47,26 @@ const sendVerificationEmail = async (email, token) => {
         </p>
       </div>
     `
-    };
+  };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('인증 이메일 발송 성공:', email);
-    } catch (error) {
-        console.error('이메일 발송 실패:', error);
-        throw new Error('이메일 발송에 실패했습니다');
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('인증 이메일 발송 성공:', email);
+  } catch (error) {
+    console.error('이메일 발송 실패:', error);
+    throw new Error('이메일 발송에 실패했습니다');
+  }
 };
 
 // 비밀번호 재설정 이메일 발송
 const sendPasswordResetEmail = async (email, token) => {
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-    const mailOptions = {
-        from: `"점심 해적단" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: '🔑 비밀번호 재설정 요청',
-        html: `
+  const mailOptions = {
+    from: `"점심 해적단" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: '🔑 비밀번호 재설정 요청',
+    html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #333;">비밀번호 재설정</h1>
         <p style="font-size: 16px; color: #666;">
@@ -75,18 +85,18 @@ const sendPasswordResetEmail = async (email, token) => {
         </p>
       </div>
     `
-    };
+  };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('비밀번호 재설정 이메일 발송 성공:', email);
-    } catch (error) {
-        console.error('이메일 발송 실패:', error);
-        throw new Error('이메일 발송에 실패했습니다');
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('비밀번호 재설정 이메일 발송 성공:', email);
+  } catch (error) {
+    console.error('이메일 발송 실패:', error);
+    throw new Error('이메일 발송에 실패했습니다');
+  }
 };
 
 module.exports = {
-    sendVerificationEmail,
-    sendPasswordResetEmail
+  sendVerificationEmail,
+  sendPasswordResetEmail
 };
