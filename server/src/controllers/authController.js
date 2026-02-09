@@ -217,9 +217,9 @@ const login = async (req, res) => {
             });
         }
 
-        // 2. 사용자 & 회사 정보 조회 (JOIN 추가)
+        // 2. 사용자 & 회사 정보 조회 (JOIN 추가, 인증 여부 포함)
         const result = await pool.query(
-            `SELECT u.id, u.email, u.password, u.name, u.role, u.company_id, 
+            `SELECT u.id, u.email, u.password, u.name, u.role, u.company_id, u.email_verified_yn,
                     c.latitude as company_latitude, c.longitude as company_longitude, u.ticket_count
              FROM users u
              JOIN companies c ON u.company_id = c.id
@@ -236,7 +236,15 @@ const login = async (req, res) => {
 
         const user = result.rows[0];
 
-        // 3. 비밀번호 검증
+        // 3. 이메일 인증 여부 검증
+        if (user.email_verified_yn === 'N') {
+            return res.status(403).json({
+                success: false,
+                message: '이메일 인증이 완료되지 않았습니다. 메일함을 확인해주세요.'
+            });
+        }
+
+        // 4. 비밀번호 검증
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
