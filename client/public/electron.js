@@ -32,7 +32,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            devTools: isDev,
+            devTools: true, // [디버깅용] 프로덕션에서도 개발자 도구 활성화
             webSecurity: false // [중요] file:// 프로토콜에서 외부 API(카카오 등) 호출 시 CORS 문제 해결을 위한 강력한 설정
         },
     });
@@ -47,11 +47,8 @@ function createWindow() {
 
     mainWindow.loadURL(startUrl);
 
-    // 개발 환경에서만 개발자 도구 자동 열기
-    if (isDev) {
-        mainWindow.webContents.openDevTools();
-    }
-
+    // [디버깅용] 항상 개발자 도구 열기 (에러 확인을 위해)
+    mainWindow.webContents.openDevTools();
 
     // 커스텀 메뉴 설정 (필요한 것만)
     const menuTemplate = [
@@ -88,21 +85,19 @@ function createWindow() {
         },
     ];
 
-    // 개발 모드에서만 개발자 도구 메뉴 추가
-    if (isDev) {
-        menuTemplate.push({
-            label: '개발',
-            submenu: [
-                {
-                    label: '개발자 도구',
-                    accelerator: 'F12',
-                    click: () => {
-                        mainWindow.webContents.toggleDevTools();
-                    },
+    // 개발 모드에서만 개발자 도구 메뉴 추가 (이제 항상 추가)
+    menuTemplate.push({
+        label: '개발',
+        submenu: [
+            {
+                label: '개발자 도구',
+                accelerator: 'F12',
+                click: () => {
+                    mainWindow.webContents.toggleDevTools();
                 },
-            ],
-        });
-    }
+            },
+        ],
+    });
 
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
@@ -110,12 +105,16 @@ function createWindow() {
     // [중요] 카카오 지도 API가 file:// 프로토콜에서 작동하지 않는 문제 해결
     // API 요청 시 Origin과 Referer를 localhost:3000으로 속여서 보냄
     const filter = {
-        urls: ['*://*.kakao.com/*', '*://*.daum.net/*', '*://*.daumcdn.net/*']
+        urls: ['*://*/*'] // 모든 URL에 대해 적용 (확실하게 잡기 위해)
     };
 
     mainWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-        details.requestHeaders['Origin'] = 'http://localhost:3000';
-        details.requestHeaders['Referer'] = 'http://localhost:3000';
+        // 카카오/다음 관련 요청인 경우에만 헤더 조작
+        const url = details.url;
+        if (url.includes('kakao.com') || url.includes('daum.net') || url.includes('daumcdn.net') || url.includes('kakaocdn.net')) {
+            details.requestHeaders['Origin'] = 'http://localhost:3000';
+            details.requestHeaders['Referer'] = 'http://localhost:3000';
+        }
         callback({ cancel: false, requestHeaders: details.requestHeaders });
     });
 
