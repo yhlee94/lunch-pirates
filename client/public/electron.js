@@ -42,13 +42,10 @@ function createWindow() {
         ? 'http://localhost:3000'
         : `file://${path.join(__dirname, '../build/index.html')}`;
 
+
+
     console.log('isDev:', isDev);
     console.log('startUrl:', startUrl);
-
-    mainWindow.loadURL(startUrl);
-
-    // [디버깅용] 항상 개발자 도구 열기 (에러 확인을 위해)
-    mainWindow.webContents.openDevTools();
 
     // 커스텀 메뉴 설정 (필요한 것만)
     const menuTemplate = [
@@ -102,20 +99,10 @@ function createWindow() {
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 
-    // [중요] 카카오 지도 API가 file:// 프로토콜에서 작동하지 않는 문제 해결
-    // API 요청 시 Origin과 Referer를 localhost:3000으로 속여서 보냄
-    const filter = {
-        urls: ['*://*.kakao.com/*', '*://*.daum.net/*', '*://*.daumcdn.net/*', '*://*.kakaocdn.net/*']
-    };
+    mainWindow.loadURL(startUrl);
 
-    mainWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-        details.requestHeaders['Origin'] = 'http://localhost:3000';
-        details.requestHeaders['Referer'] = 'http://localhost:3000';
-        // User-Agent를 일반 크롬 브라우저처럼 위장 (Electron 식별자 제거)
-        details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
-        callback({ cancel: false, requestHeaders: details.requestHeaders });
-    });
+    // [디버깅용] 항상 개발자 도구 열기 (에러 확인을 위해)
+    mainWindow.webContents.openDevTools();
 
     // 닫기 버튼 클릭 시 숨기기 (트레이로 이동)
     mainWindow.on('close', (event) => {
