@@ -234,7 +234,8 @@ function CreateRoom({ user }) {
             const hh = String(departure.getHours()).padStart(2, '0');
             const mm = String(departure.getMinutes()).padStart(2, '0');
             const ss = '00';
-            const localDepartureTime = `${year}-${month}-${day} ${hh}:${mm}:${ss}`;
+            // 한국 시간(+09)임을 명시하여 서버로 전송
+            const localDepartureTime = `${year}-${month}-${day} ${hh}:${mm}:${ss}+09`;
 
             const response = await axios.post(
                 `${API_BASE_URL}/api/rooms`,
