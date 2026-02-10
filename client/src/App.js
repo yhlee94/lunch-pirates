@@ -79,11 +79,13 @@ function App() {
             if (isDeparting) {
               console.log(`⛵ [출항] ${isDeparting.restaurant_name} 호, 지금 출항합니다!`);
               try {
-                const { ipcRenderer } = window.require('electron');
-                ipcRenderer.send('show-wallpaper', {
-                  participants: isDeparting.participants,
-                  restaurant_name: isDeparting.restaurant_name
-                });
+                if (window.require) {
+                  const { ipcRenderer } = window.require('electron');
+                  ipcRenderer.send('show-wallpaper', {
+                    participants: isDeparting.participants,
+                    restaurant_name: isDeparting.restaurant_name
+                  });
+                }
               } catch (e) {
                 console.error('IPC 전송 실패:', e);
               }
@@ -112,8 +114,10 @@ function App() {
       console.log('새로운 해적선 포착:', data);
       if (isElectron) {
         try {
-          const { ipcRenderer } = window.require('electron');
-          ipcRenderer.send('show-notification', data);
+          if (window.require) {
+            const { ipcRenderer } = window.require('electron');
+            ipcRenderer.send('show-notification', data);
+          }
         } catch (e) {
           console.error('IPC 전송 실패:', e);
         }

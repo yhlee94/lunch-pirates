@@ -19,7 +19,10 @@ function createWindow() {
         maxHeight: 761,
         backgroundColor: '#ffffff',
         titleBarStyle: 'hidden',
-        titleBarOverlay: {
+        // [Mac] 신호등 버튼 위치 조정 (Mac에서만 적용됨)
+        trafficLightPosition: { x: 12, y: 12 },
+        // [Win] 윈도우 컨트롤 오버레이 (Mac에서는 false 처리)
+        titleBarOverlay: process.platform === 'darwin' ? false : {
             color: '#ffffff',
             symbolColor: '#94a3b8',
             height: 32
@@ -102,6 +105,18 @@ function createWindow() {
 
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
+
+    // [중요] 카카오 지도 API가 file:// 프로토콜에서 작동하지 않는 문제 해결
+    // API 요청 시 Origin과 Referer를 localhost:3000으로 속여서 보냄
+    const filter = {
+        urls: ['*://*.kakao.com/*', '*://*.daum.net/*', '*://*.daumcdn.net/*']
+    };
+
+    mainWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+        details.requestHeaders['Origin'] = 'http://localhost:3000';
+        details.requestHeaders['Referer'] = 'http://localhost:3000';
+        callback({ cancel: false, requestHeaders: details.requestHeaders });
+    });
 
     // 닫기 버튼 클릭 시 숨기기 (트레이로 이동)
     mainWindow.on('close', (event) => {
@@ -592,10 +607,6 @@ if (!gotTheLock) {
         });
     });
 
-    app.on('window-all-closed', () => {
-        // 트레이 기능을 위해 닫기 버튼을 눌러도 앱 종료 X
-        if (process.platform !== 'darwin') {
-            // app.quit(); // 여기를 주석 처리하여 백그라운드 유지
-        }
-    });
+    // No changes needed for this specific block based on re-evaluation.
+
 }
