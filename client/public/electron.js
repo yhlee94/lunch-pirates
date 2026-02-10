@@ -105,16 +105,15 @@ function createWindow() {
     // [중요] 카카오 지도 API가 file:// 프로토콜에서 작동하지 않는 문제 해결
     // API 요청 시 Origin과 Referer를 localhost:3000으로 속여서 보냄
     const filter = {
-        urls: ['*://*/*'] // 모든 URL에 대해 적용 (확실하게 잡기 위해)
+        urls: ['*://*.kakao.com/*', '*://*.daum.net/*', '*://*.daumcdn.net/*', '*://*.kakaocdn.net/*']
     };
 
     mainWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-        // 카카오/다음 관련 요청인 경우에만 헤더 조작
-        const url = details.url;
-        if (url.includes('kakao.com') || url.includes('daum.net') || url.includes('daumcdn.net') || url.includes('kakaocdn.net')) {
-            details.requestHeaders['Origin'] = 'http://localhost:3000';
-            details.requestHeaders['Referer'] = 'http://localhost:3000';
-        }
+        details.requestHeaders['Origin'] = 'http://localhost:3000';
+        details.requestHeaders['Referer'] = 'http://localhost:3000';
+        // User-Agent를 일반 크롬 브라우저처럼 위장 (Electron 식별자 제거)
+        details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
         callback({ cancel: false, requestHeaders: details.requestHeaders });
     });
 
