@@ -14,10 +14,10 @@ function CreateRoom({ user }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [showTimePicker, setShowTimePicker] = useState(false);
     const { showAlert } = useAlert();
-    // This block is just for context, no actual change to CreateRoom.js regarding window.kakao as it is standard.
-    // The primary change is in electron.js for MacOS compatibility.
+    const [mapInstance, setMapInstance] = useState(null);
+    const markersRef = useRef([]);
 
-    const scrollRef = useRef(null);
+    // Scroll refs
 
     const scrollList = (direction) => {
         if (scrollRef.current) {
