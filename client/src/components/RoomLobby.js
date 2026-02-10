@@ -232,7 +232,16 @@ function RoomLobby({ user }) {
                                         {/* Avatar Image (No Circle) */}
                                         <div className="w-24 aspect-square flex items-center justify-center filter drop-shadow-lg transition-transform hover:scale-110">
                                             <img
-                                                src={pirate.equipped_item_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${pirate.id}`}
+                                                src={
+                                                    pirate.equipped_item_image_url
+                                                        ? (pirate.equipped_item_image_url.startsWith('http')
+                                                            ? pirate.equipped_item_image_url
+                                                            : (process.env.NODE_ENV === 'development'
+                                                                ? `http://localhost:3000${pirate.equipped_item_image_url}`
+                                                                : `.${pirate.equipped_item_image_url}`)
+                                                        )
+                                                        : `${process.env.PUBLIC_URL}/assets/Character/basicFoam.png`
+                                                }
                                                 alt={pirate.name}
                                                 className="w-full h-full object-contain"
                                             />
