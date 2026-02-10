@@ -1,6 +1,6 @@
 // client/src/App.js
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
@@ -126,7 +126,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AlertProvider>
         <div className="App">
           <div className="electron-nav"></div>
@@ -171,7 +171,7 @@ function App() {
           </Routes >
         </div >
       </AlertProvider>
-    </BrowserRouter >
+    </HashRouter >
   );
 }
 
