@@ -18,6 +18,7 @@ function CreateRoom({ user }) {
     const markersRef = useRef([]);
 
     // Scroll refs
+    const scrollRef = useRef(null);
 
     const scrollList = (direction) => {
         if (scrollRef.current) {

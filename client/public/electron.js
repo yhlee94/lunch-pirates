@@ -33,6 +33,7 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             devTools: isDev,
+            webSecurity: false // [중요] file:// 프로토콜에서 외부 API(카카오 등) 호출 시 CORS 문제 해결을 위한 강력한 설정
         },
     });
 
