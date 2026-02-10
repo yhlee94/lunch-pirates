@@ -58,7 +58,7 @@ function App() {
 
         try {
           const token = sessionStorage.getItem('token');
-          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/rooms`, {
+          const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await response.json();

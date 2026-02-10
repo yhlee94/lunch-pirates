@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomAlert from './CustomAlert';
+import API_BASE_URL from '../apiConfig';
 
 const GachaPage = () => {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ const GachaPage = () => {
     const fetchStatus = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/status`, {
+            const response = await fetch(`${API_BASE_URL}/api/tickets/status`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -56,7 +57,7 @@ const GachaPage = () => {
 
         try {
             const token = sessionStorage.getItem('token');
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/insert-coin`, {
+            const response = await fetch(`${API_BASE_URL}/api/tickets/insert-coin`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -81,7 +82,7 @@ const GachaPage = () => {
     const handleLeverComplete = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/pull-lever`, {
+            const response = await fetch(`${API_BASE_URL}/api/tickets/pull-lever`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

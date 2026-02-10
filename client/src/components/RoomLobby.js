@@ -237,7 +237,7 @@ function RoomLobby({ user }) {
                                                         ? (pirate.equipped_item_image_url.startsWith('http')
                                                             ? pirate.equipped_item_image_url
                                                             : (process.env.NODE_ENV === 'development'
-                                                                ? `http://localhost:3000${pirate.equipped_item_image_url}`
+                                                                ? `${API_BASE_URL}${pirate.equipped_item_image_url}`
                                                                 : `.${pirate.equipped_item_image_url}`)
                                                         )
                                                         : `${process.env.PUBLIC_URL}/assets/Character/basicFoam.png`

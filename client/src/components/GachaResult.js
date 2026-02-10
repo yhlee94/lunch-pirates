@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomAlert from './CustomAlert';
+import API_BASE_URL from '../apiConfig';
 
 const GachaResult = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const GachaResult = () => {
         setIsLoading(true);
         try {
             const token = sessionStorage.getItem('token');
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/tickets/push-button`, {
+            const response = await fetch(`${API_BASE_URL}/api/tickets/push-button`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
