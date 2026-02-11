@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
 import { useAlert } from '../contexts/AlertContext';
+import io from 'socket.io-client';
 
 function RoomLobby({ user }) {
     const { roomId } = useParams();
@@ -44,6 +45,16 @@ function RoomLobby({ user }) {
         if (!room) {
             fetchRoomData();
         }
+
+        const socket = io(API_BASE_URL);
+        socket.on('refresh_room_list', () => {
+            fetchRoomData(true);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+
     }, [roomId, navigate]); // Removed 'room' dependency to prevent infinite loops if we fetch inside
 
     const handleJoin = async () => {

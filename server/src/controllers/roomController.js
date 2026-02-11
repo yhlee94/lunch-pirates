@@ -46,7 +46,7 @@ exports.createRoom = async (req, res) => {
         const roomResult = await client.query(
             `INSERT INTO lunch_rooms
              (company_id, creator_id, restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time, kakao_place_id, status, created_at, updated_at, deleted_yn)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'waiting', NOW(), NOW(), 'N')
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'waiting', (NOW() AT TIME ZONE 'Asia/Seoul'), (NOW() AT TIME ZONE 'Asia/Seoul'), 'N')
                  RETURNING *`,
             [company_id, creator_id, restaurant_name, restaurant_address, latitude, longitude, max_participants, departure_time, kakao_place_id]
         );
@@ -56,7 +56,7 @@ exports.createRoom = async (req, res) => {
         // 방장을 자동으로 참가자로 추가
         await client.query(
             `INSERT INTO participants (room_id, user_id, joined_at)
-             VALUES ($1, $2, NOW())`,
+             VALUES ($1, $2, (NOW() AT TIME ZONE 'Asia/Seoul'))`,
             [room.id, creator_id]
         );
 
@@ -224,7 +224,7 @@ exports.cleanupOldRooms = async () => {
             // 방 상태 변경: departed, 삭제 처리
             await client.query(
                 `UPDATE lunch_rooms
-                 SET status = 'departed', deleted_yn = 'Y', updated_at = NOW(),
+                 SET status = 'departed', deleted_yn = 'Y', updated_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
                      participants_count = (SELECT COUNT(*) FROM participants WHERE room_id = lunch_rooms.id AND left_at IS NULL)
                  WHERE id = ANY($1)`,
                 [sailedRoomIds]
@@ -243,7 +243,7 @@ exports.cleanupOldRooms = async () => {
             await client.query(
                 `UPDATE users
                  SET ticket_count = ticket_count + 2,
-                     updated_at = NOW()
+                     updated_at = (NOW() AT TIME ZONE 'Asia/Seoul')
                  WHERE id IN (
                      SELECT user_id 
                      FROM participants 
@@ -259,7 +259,7 @@ exports.cleanupOldRooms = async () => {
             // 방 상태 변경: finished, 삭제 처리
             await client.query(
                 `UPDATE lunch_rooms
-                 SET status = 'finished', deleted_yn = 'Y', updated_at = NOW(),
+                 SET status = 'finished', deleted_yn = 'Y', updated_at = (NOW() AT TIME ZONE 'Asia/Seoul'),
                      participants_count = (SELECT COUNT(*) FROM participants WHERE room_id = lunch_rooms.id AND left_at IS NULL)
                  WHERE id = ANY($1)`,
                 [failedRoomIds]
@@ -345,7 +345,7 @@ exports.joinRoom = async (req, res) => {
 
         // 5. 참가 처리
         await client.query(
-            'INSERT INTO participants (room_id, user_id, joined_at) VALUES ($1, $2, NOW())',
+            'INSERT INTO participants (room_id, user_id, joined_at) VALUES ($1, $2, (NOW() AT TIME ZONE \'Asia/Seoul\'))',
             [roomId, userId]
         );
 
@@ -431,7 +431,7 @@ exports.deleteRoom = async (req, res) => {
         // 2. 방 삭제 처리 (deleted_yn = 'Y')
         await client.query(
             `UPDATE lunch_rooms 
-             SET deleted_yn = 'Y', status = 'finished', updated_at = NOW() 
+             SET deleted_yn = 'Y', status = 'finished', updated_at = (NOW() AT TIME ZONE 'Asia/Seoul') 
              WHERE id = $1`,
             [roomId]
         );
