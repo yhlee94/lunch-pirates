@@ -64,8 +64,8 @@ const getCompanyRankings = async (req, res) => {
                 lunch_rooms 
             WHERE 
                 company_id = $1 
-                AND departure_time >= NOW() - INTERVAL '30 days'
-                AND departure_time <= NOW()
+                AND departure_time >= (NOW() AT TIME ZONE 'Asia/Seoul') - INTERVAL '30 days'
+                AND departure_time <= (NOW() AT TIME ZONE 'Asia/Seoul')
                 AND status = 'departed'
             GROUP BY 
                 kakao_place_id, 
