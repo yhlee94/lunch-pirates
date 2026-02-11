@@ -77,6 +77,12 @@ function App() {
             });
 
             if (isDeparting) {
+              // 혼자 있는 방은 알람 울리지 않음 (오류 방지 및 UX)
+              if (isDeparting.current_participants < 2) {
+                console.log(`⛵ [출항취소] ${isDeparting.restaurant_name} 호, 인원 부족(1명)으로 출항 알림 생략`);
+                return;
+              }
+
               console.log(`⛵ [출항] ${isDeparting.restaurant_name} 호, 지금 출항합니다!`);
               try {
                 if (window.require) {
