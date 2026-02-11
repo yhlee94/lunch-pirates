@@ -32,7 +32,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            devTools: true, // [디버깅용] 프로덕션에서도 개발자 도구 활성화
+            devTools: isDev, // [디버깅용] 개발 모드에서만 개발자 도구 활성화
             webSecurity: false // [중요] file:// 프로토콜에서 외부 API(카카오 등) 호출 시 CORS 문제 해결을 위한 강력한 설정
         },
     });
@@ -82,27 +82,31 @@ function createWindow() {
         },
     ];
 
-    // 개발 모드에서만 개발자 도구 메뉴 추가 (이제 항상 추가)
-    menuTemplate.push({
-        label: '개발',
-        submenu: [
-            {
-                label: '개발자 도구',
-                accelerator: 'F12',
-                click: () => {
-                    mainWindow.webContents.toggleDevTools();
+    // 개발 모드에서만 개발자 도구 메뉴 추가
+    if (isDev) {
+        menuTemplate.push({
+            label: '개발',
+            submenu: [
+                {
+                    label: '개발자 도구',
+                    accelerator: 'F12',
+                    click: () => {
+                        mainWindow.webContents.toggleDevTools();
+                    },
                 },
-            },
-        ],
-    });
+            ],
+        });
+    }
 
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 
     mainWindow.loadURL(startUrl);
 
-    // [디버깅용] 항상 개발자 도구 열기 (에러 확인을 위해)
-    mainWindow.webContents.openDevTools();
+    // [디버깅용] 개발 모드일 때만 개발자 도구 열기
+    if (isDev) {
+        mainWindow.webContents.openDevTools();
+    }
 
     // 닫기 버튼 클릭 시 숨기기 (트레이로 이동)
     mainWindow.on('close', (event) => {
