@@ -116,7 +116,7 @@ exports.getRooms = async (req, res) => {
                  lr.latitude,
                  lr.longitude,
                  lr.max_participants,
-                 lr.departure_time,
+                 lr.departure_time AT TIME ZONE 'Asia/Seoul' as departure_time,
                  lr.status,
                  lr.created_at,
                  u.id as creator_id,
@@ -297,7 +297,7 @@ exports.joinRoom = async (req, res) => {
 
         // 1. 방 정보 및 현재 참가 인원 조회
         const roomResult = await client.query(
-            `SELECT lr.*, COUNT(p.id) as current_participants
+            `SELECT lr.*, lr.departure_time AT TIME ZONE 'Asia/Seoul' as departure_time, COUNT(p.id) as current_participants
              FROM lunch_rooms lr
              LEFT JOIN participants p ON lr.id = p.room_id AND p.left_at IS NULL
              WHERE lr.id = $1 AND lr.deleted_yn = 'N'
