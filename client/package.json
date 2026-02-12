@@ -74,7 +74,7 @@
       "signingHashAlgorithms": []
     },
     "mac": {
-      "target": "zip",
+      "target": "dmg",
       "icon": "public/assets/Common/system.png"
     },
     "portable": {
